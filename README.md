@@ -10,6 +10,8 @@
 一个专门用于**即梦网页端生图**的本地 skill。  
 支持模型选择、比例选择、稳定自动化、原图下载，以及自动将 `webp` 转成 `png/jpg`。
 
+![Workflow](./assets/flow-overview.svg)
+
 ## ✨ 项目特色
 
 - 🚀 不需要开通即梦高阶会员，也可以直接使用即梦网页端生图
@@ -76,6 +78,10 @@ bash scripts/install_links.sh
 - `~/.opencode/skills`
 - `~/.workbuddy/skills`
 - `~/.codebuddy/skills`
+
+## 🖼️ Demo
+
+![Demo Board](./assets/demo-board.svg)
 
 ## ⚙️ 配置项
 

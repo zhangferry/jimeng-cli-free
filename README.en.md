@@ -10,6 +10,8 @@
 A local skill focused on **image generation through the Dreamina web app**.  
 It supports model selection, aspect ratio control, stable browser automation, original image download, and automatic `webp -> png/jpg` conversion.
 
+![Workflow](./assets/flow-overview.svg)
+
 ## ✨ Highlights
 
 - 🚀 Works with the Dreamina web app without requiring a high-tier membership
@@ -76,6 +78,10 @@ This links the skill into:
 - `~/.opencode/skills`
 - `~/.workbuddy/skills`
 - `~/.codebuddy/skills`
+
+## 🖼️ Demo
+
+![Demo Board](./assets/demo-board.svg)
 
 ## ⚙️ Configuration
 

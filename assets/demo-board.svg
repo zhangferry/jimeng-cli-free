@@ -1,0 +1,65 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="28" fill="#0F172A"/>
+  <rect x="24" y="24" width="1152" height="712" rx="22" fill="#111827"/>
+  <rect x="48" y="48" width="1104" height="72" rx="16" fill="#1F2937"/>
+  <circle cx="86" cy="84" r="8" fill="#FB7185"/>
+  <circle cx="112" cy="84" r="8" fill="#FBBF24"/>
+  <circle cx="138" cy="84" r="8" fill="#34D399"/>
+  <text x="174" y="92" fill="#E5E7EB" font-family="Arial, sans-serif" font-size="26" font-weight="700">jimeng-image-gen-opencli</text>
+  <text x="860" y="91" fill="#93C5FD" font-family="Arial, sans-serif" font-size="16">Model: 4.6   Ratio: 16:9   Output: PNG</text>
+
+  <rect x="48" y="144" width="680" height="548" rx="18" fill="#0B1220" stroke="#243041"/>
+  <text x="76" y="184" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="24" font-weight="700">Dreamina Web Generation</text>
+  <text x="76" y="214" fill="#94A3B8" font-family="Arial, sans-serif" font-size="16">Stable browser-side generation with model, aspect ratio and original-image extraction.</text>
+
+  <rect x="76" y="252" width="292" height="188" rx="16" fill="url(#img1)"/>
+  <rect x="388" y="252" width="292" height="188" rx="16" fill="url(#img2)"/>
+  <rect x="76" y="460" width="292" height="188" rx="16" fill="url(#img3)"/>
+  <rect x="388" y="460" width="292" height="188" rx="16" fill="url(#img4)"/>
+
+  <rect x="760" y="144" width="392" height="264" rx="18" fill="#111827" stroke="#243041"/>
+  <text x="788" y="184" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="24" font-weight="700">Local Output Folder</text>
+  <text x="788" y="214" fill="#94A3B8" font-family="Arial, sans-serif" font-size="16">Each run creates a new timestamped folder and downloads 4 fresh images.</text>
+
+  <rect x="788" y="244" width="336" height="48" rx="12" fill="#0B1220"/>
+  <text x="808" y="274" fill="#E2E8F0" font-family="Courier New, monospace" font-size="18">20260412-003043/</text>
+  <rect x="788" y="304" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="329" fill="#93C5FD" font-family="Courier New, monospace" font-size="16">0001.png   2560x1440</text>
+  <rect x="788" y="352" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="377" fill="#93C5FD" font-family="Courier New, monospace" font-size="16">0002.png   2560x1440</text>
+  <rect x="788" y="400" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="425" fill="#93C5FD" font-family="Courier New, monospace" font-size="16">0003.png   2560x1440</text>
+  <rect x="788" y="448" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="473" fill="#93C5FD" font-family="Courier New, monospace" font-size="16">0004.png   2560x1440</text>
+  <rect x="788" y="496" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="521" fill="#CBD5E1" font-family="Courier New, monospace" font-size="16">prompt.txt</text>
+  <rect x="788" y="544" width="336" height="38" rx="10" fill="#0B1220"/>
+  <text x="808" y="569" fill="#CBD5E1" font-family="Courier New, monospace" font-size="16">result.json</text>
+
+  <rect x="760" y="580" width="392" height="112" rx="18" fill="url(#panel)"/>
+  <text x="788" y="622" fill="#082F49" font-family="Arial, sans-serif" font-size="24" font-weight="700">What users see</text>
+  <text x="788" y="652" fill="#0F172A" font-family="Arial, sans-serif" font-size="16">A clear workflow: prepare browser, pick model and ratio, generate, then open the output folder with four downloaded images.</text>
+
+  <defs>
+    <linearGradient id="img1" x1="76" y1="252" x2="368" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#164E63"/>
+      <stop offset="1" stop-color="#67E8F9"/>
+    </linearGradient>
+    <linearGradient id="img2" x1="388" y1="252" x2="680" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14532D"/>
+      <stop offset="1" stop-color="#86EFAC"/>
+    </linearGradient>
+    <linearGradient id="img3" x1="76" y1="460" x2="368" y2="648" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#312E81"/>
+      <stop offset="1" stop-color="#A5B4FC"/>
+    </linearGradient>
+    <linearGradient id="img4" x1="388" y1="460" x2="680" y2="648" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C2D12"/>
+      <stop offset="1" stop-color="#FDBA74"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="760" y1="580" x2="1152" y2="692" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A5F3FC"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+</svg>
