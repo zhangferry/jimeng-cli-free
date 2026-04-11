@@ -1,3 +1,6 @@
+// Derived from the jimeng generate adapter in jackwener/opencli (Apache-2.0).
+// Modified in this repository to improve Dreamina stability, model/aspect control,
+// and original-image extraction for local skill-based usage.
 import { cli, Strategy } from '@jackwener/opencli/registry';
 cli({
     site: 'jimeng',

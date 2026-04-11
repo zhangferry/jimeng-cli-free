@@ -1,0 +1,9 @@
+This project includes modified derivative work based on OpenCLI:
+
+- Project: jackwener/opencli
+- Upstream repository: https://github.com/jackwener/opencli
+- Upstream license: Apache License 2.0
+- Relevant derivative file in this repository:
+  - overrides/jimeng/generate.js
+
+This repository distributes its own modifications under the Apache License 2.0.

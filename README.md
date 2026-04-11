@@ -1,20 +1,26 @@
-# jimeng-image-gen-opencli
+# 🎨 jimeng-image-gen-opencli
 
-[中文说明](./README.zh-CN.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS-black)](#-环境要求)
+[![Browser](https://img.shields.io/badge/Browser-Chrome%20%7C%20Edge-2ea44f)](#-环境要求)
+[![Dreamina](https://img.shields.io/badge/Dreamina-Web%20Image%20Gen-ff7a59)](#-项目特色)
 
-Generate images on the Dreamina web app with model and aspect controls, stable browser-side automation, original image download, and automatic `webp -> png/jpg` conversion.
+[🇺🇸 English](./README.en.md)
 
-## Highlights
+一个专门用于**即梦网页端生图**的本地 skill。  
+支持模型选择、比例选择、稳定自动化、原图下载，以及自动将 `webp` 转成 `png/jpg`。
 
-- Works with the Dreamina web app without requiring a high-tier membership
-- Using the lowest Dreamina membership is recommended for a smoother generation experience
-- Supports these models:
-  - `high_aes_general_v50`: Image 5.0 Lite
-  - `high_aes_general_v42`: Image 4.6
-  - `high_aes_general_v45`: Image 4.5
-  - `high_aes_general_v41`: Image 4.1
-  - `high_aes_general_v40`: Image 4.0
-- Supports these aspect ratios:
+## ✨ 项目特色
+
+- 🚀 不需要开通即梦高阶会员，也可以直接使用即梦网页端生图
+- 💡 建议使用即梦最低会员，可获得更流畅的生图体验
+- 🖼️ 支持以下模型：
+  - `high_aes_general_v50`：图片5.0 Lite
+  - `high_aes_general_v42`：图片4.6
+  - `high_aes_general_v45`：图片4.5
+  - `high_aes_general_v41`：图片4.1
+  - `high_aes_general_v40`：图片4.0
+- 📐 支持以下比例：
   - `smart`
   - `21:9`
   - `16:9`
@@ -24,46 +30,46 @@ Generate images on the Dreamina web app with model and aspect controls, stable b
   - `3:4`
   - `2:3`
   - `9:16`
-- Downloads all 4 generated images into the local `output/` folder
-- Converts downloaded images to `png` by default, with optional `jpg` or `webp`
-- Ships as an MIT-licensed open source project
+- 📥 每次自动下载 4 张结果图到本地 `output/`
+- 🔄 默认把下载结果转成 `png`，也可改成 `jpg` 或 `webp`
+- 🔓 项目采用 **Apache-2.0** 开源协议
 
-## Requirements
+## 🧰 环境要求
 
 - macOS
-- `node`, `npm`, `git`, `gh`, `curl`, `tar`, `unzip`
-- Google Chrome or Microsoft Edge
-- The required browser bridge extension must be installed manually
-- A logged-in Dreamina web session in your browser
+- `node`、`npm`、`git`、`gh`、`curl`、`tar`、`unzip`
+- 已安装 **Google Chrome** 或 **Microsoft Edge**
+- 需要手动安装浏览器桥接插件
+- 浏览器中已登录即梦网页端
 
-## Quick Start
+## ⚡ 快速开始
 
-1. Clone the repository
+### 1. 克隆仓库
 
 ```bash
 git clone https://github.com/leigegehaha/jimeng-image-gen-opencli.git
 cd jimeng-image-gen-opencli
 ```
 
-2. Prepare the environment
+### 2. 准备环境
 
 ```bash
 bash bin/jimeng-image ensure
 ```
 
-3. Generate images
+### 3. 开始生图
 
 ```bash
-bash bin/jimeng-image generate "Green glass architecture with plants, landscape poster" --model high_aes_general_v42 --aspect 16:9
+bash bin/jimeng-image generate "青绿色玻璃建筑与植物，横版海报" --model high_aes_general_v42 --aspect 16:9
 ```
 
-## Install Into Agents
+## 🤖 安装到多个 Agent
 
 ```bash
 bash scripts/install_links.sh
 ```
 
-This links the skill into:
+默认会把这个 skill 软链接安装到：
 
 - `~/.agents/skills`
 - `~/.claude/skills`
@@ -71,9 +77,9 @@ This links the skill into:
 - `~/.workbuddy/skills`
 - `~/.codebuddy/skills`
 
-## Configuration
+## ⚙️ 配置项
 
-Edit [config.json](./config.json):
+修改 [config.json](./config.json)：
 
 - `default_model`
 - `default_aspect`
@@ -82,12 +88,14 @@ Edit [config.json](./config.json):
 - `runtime_source_mode`
 - `runtime_pinned_commit`
 
-## Notes
+## 📌 使用说明
 
-- The first run consumes Dreamina credits
-- Log in to `https://jimeng.jianying.com` before use
-- The browser extension must be loaded manually from the unpacked directory
+- 首次运行会真实消耗即梦额度
+- 使用前请先在浏览器登录 `https://jimeng.jianying.com`
+- 浏览器插件需要从 unpacked 目录手动加载
 
-## License
+## ⚖️ 许可证与致谢
 
-[MIT](./LICENSE)
+- 本项目采用 [Apache-2.0](./LICENSE)
+- 本项目包含基于上游项目修改而来的衍生代码，详见 [NOTICE](./NOTICE)
+- 上游来源与归属说明已保留，以避免许可证适用错误
