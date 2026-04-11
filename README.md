@@ -1,21 +1,20 @@
 # jimeng-image-gen-opencli
 
-一个可分发的本地 skill：使用 OpenCLI 驱动即梦网页端稳定生图，支持模型选择、比例选择、固定 commit 私有 runtime、原图下载，以及 `webp -> png/jpg` 自动转换。
+[中文说明](./README.zh-CN.md)
 
-## 特性
+Generate images on the Dreamina web app with model and aspect controls, stable browser-side automation, original image download, and automatic `webp -> png/jpg` conversion.
 
-- 自动检测或安装系统 `opencli`
-- 自动下载 OpenCLI 浏览器插件，并提示用户加载
-- 使用 skill 私有 OpenCLI runtime，尽量避免被系统全局 `opencli` 升级影响
-- 私有 runtime 默认从固定 commit 归档包恢复，便于复现
-- 自动同步即梦专用 override
-- 支持模型：
-  - `high_aes_general_v50`：图片5.0 Lite
-  - `high_aes_general_v42`：图片4.6
-  - `high_aes_general_v45`：图片4.5
-  - `high_aes_general_v41`：图片4.1
-  - `high_aes_general_v40`：图片4.0
-- 支持比例：
+## Highlights
+
+- Works with the Dreamina web app without requiring a high-tier membership
+- Using the lowest Dreamina membership is recommended for a smoother generation experience
+- Supports these models:
+  - `high_aes_general_v50`: Image 5.0 Lite
+  - `high_aes_general_v42`: Image 4.6
+  - `high_aes_general_v45`: Image 4.5
+  - `high_aes_general_v41`: Image 4.1
+  - `high_aes_general_v40`: Image 4.0
+- Supports these aspect ratios:
   - `smart`
   - `21:9`
   - `16:9`
@@ -25,39 +24,46 @@
   - `3:4`
   - `2:3`
   - `9:16`
-- 下载 4 张结果图到本地 `output/`
-- 默认把结果转成 `png`，也可改为 `jpg` 或 `webp`
+- Downloads all 4 generated images into the local `output/` folder
+- Converts downloaded images to `png` by default, with optional `jpg` or `webp`
+- Ships as an MIT-licensed open source project
 
-## 快速开始
+## Requirements
 
-1. 克隆仓库
+- macOS
+- `node`, `npm`, `git`, `gh`, `curl`, `tar`, `unzip`
+- Google Chrome or Microsoft Edge
+- The required browser bridge extension must be installed manually
+- A logged-in Dreamina web session in your browser
+
+## Quick Start
+
+1. Clone the repository
 
 ```bash
 git clone https://github.com/leigegehaha/jimeng-image-gen-opencli.git
 cd jimeng-image-gen-opencli
 ```
 
-2. 准备环境
+2. Prepare the environment
 
 ```bash
 bash bin/jimeng-image ensure
 ```
 
-3. 生成图片
+3. Generate images
 
 ```bash
-bash bin/jimeng-image generate "青绿色玻璃建筑与植物，横版海报" --model high_aes_general_v42 --aspect 16:9
+bash bin/jimeng-image generate "Green glass architecture with plants, landscape poster" --model high_aes_general_v42 --aspect 16:9
 ```
 
-## 安装到多个 Agent
-
-执行：
+## Install Into Agents
 
 ```bash
 bash scripts/install_links.sh
 ```
 
-默认会把这个 skill 软链接安装到：
+This links the skill into:
 
 - `~/.agents/skills`
 - `~/.claude/skills`
@@ -65,9 +71,9 @@ bash scripts/install_links.sh
 - `~/.workbuddy/skills`
 - `~/.codebuddy/skills`
 
-## 配置
+## Configuration
 
-修改 [config.json](./config.json)：
+Edit [config.json](./config.json):
 
 - `default_model`
 - `default_aspect`
@@ -76,8 +82,12 @@ bash scripts/install_links.sh
 - `runtime_source_mode`
 - `runtime_pinned_commit`
 
-## 说明
+## Notes
 
-- 首次运行会真实消耗即梦额度
-- 使用前请先在浏览器登录 `https://jimeng.jianying.com`
-- 浏览器插件需要用户手动加载 unpacked 目录
+- The first run consumes Dreamina credits
+- Log in to `https://jimeng.jianying.com` before use
+- The browser extension must be loaded manually from the unpacked directory
+
+## License
+
+[MIT](./LICENSE)
