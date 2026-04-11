@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPTS_DIR="$ROOT_DIR/scripts"
+
+usage() {
+  cat <<'EOF'
+用法：
+  bash bin/jimeng-image ensure
+  bash bin/jimeng-image runtime-version
+  bash bin/jimeng-image generate "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID]
+
+示例：
+  bash bin/jimeng-image generate "海边玻璃建筑，青绿色植物" --model high_aes_general_v42 --aspect 16:9
+EOF
+}
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 1
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  ensure)
+    exec bash "$SCRIPTS_DIR/ensure_opencli_and_jimeng.sh"
+    ;;
+  runtime-version)
+    exec bash "$SCRIPTS_DIR/run_opencli.sh" --version
+    ;;
+  generate)
+    if [[ $# -gt 0 && "${1:0:2}" != "--" ]]; then
+      prompt="$1"
+      shift
+      exec bash "$SCRIPTS_DIR/generate_image.sh" --prompt "$prompt" "$@"
+    fi
+    exec bash "$SCRIPTS_DIR/generate_image.sh" "$@"
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    echo "未知命令：$cmd" >&2
+    usage
+    exit 1
+    ;;
+esac

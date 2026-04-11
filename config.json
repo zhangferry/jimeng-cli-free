@@ -1,0 +1,15 @@
+{
+  "fork_repo": "leigegehaha/OpenCLI",
+  "fork_branch": "main",
+  "runtime_source_mode": "archive",
+  "runtime_pinned_commit": "3bcc14a8e183c7ebae48bb6f5b7e8d090300b50c",
+  "default_model": "high_aes_general_v50",
+  "default_aspect": "9:16",
+  "default_output_format": "png",
+  "default_workspace": "0",
+  "opencli_package": "@jackwener/opencli",
+  "extension_repo": "jackwener/opencli",
+  "extension_asset_pattern": "opencli-extension.*\\.zip",
+  "generate_wait_seconds": 20,
+  "max_generate_attempts": 3
+}

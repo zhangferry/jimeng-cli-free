@@ -1,0 +1,8 @@
+.DS_Store
+downloads/*
+!downloads/.gitkeep
+output/*
+!output/.gitkeep
+vendor/*
+!vendor/.gitkeep
+*.log
