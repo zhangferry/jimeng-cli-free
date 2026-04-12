@@ -84,10 +84,17 @@ copy_file() {
   cp "$src" "$dst"
 }
 
-LOCAL_OVERRIDE="$SKILL_DIR/overrides/jimeng/generate.js"
-if [[ -f "$LOCAL_OVERRIDE" ]]; then
-  copy_file "$LOCAL_OVERRIDE" "$REPO_DIR/clis/jimeng/generate.js"
+if [[ -d "$SKILL_DIR/overrides/jimeng" ]]; then
+  while IFS= read -r override_file; do
+    rel_path="${override_file#"$SKILL_DIR/overrides/jimeng/"}"
+    copy_file "$override_file" "$REPO_DIR/clis/jimeng/$rel_path"
+  done < <(find "$SKILL_DIR/overrides/jimeng" -type f -name '*.js' | sort)
   log "已应用 skill 本地 jimeng 适配器覆盖补丁。"
+fi
+
+if [[ -f "$REPO_DIR/dist/src/build-manifest.js" ]]; then
+  node "$REPO_DIR/dist/src/build-manifest.js" >/dev/null
+  log "已刷新 skill 私有 runtime 的 cli-manifest.json。"
 fi
 
 set_info_bool "fork_synced" "true"

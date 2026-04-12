@@ -7,12 +7,20 @@ SCRIPTS_DIR="$ROOT_DIR/scripts"
 usage() {
   cat <<'EOF'
 用法：
-  bash bin/jimeng-image ensure
-  bash bin/jimeng-image runtime-version
-  bash bin/jimeng-image generate "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID]
+  bash bin/jimeng-cli-free ensure
+  bash bin/jimeng-cli-free runtime-version
+  bash bin/jimeng-cli-free generate "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID] [--reference IMAGE|URL|clipboard] [--reference-url URL] [--clipboard] [--mode MODE]
+  bash bin/jimeng-cli-free edit "<image>" "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID]
+
+兼容旧入口：
+  bash bin/jimeng-image ...
 
 示例：
-  bash bin/jimeng-image generate "海边玻璃建筑，青绿色植物" --model high_aes_general_v42 --aspect 16:9
+  bash bin/jimeng-cli-free generate "海边玻璃建筑，青绿色植物" --model high_aes_general_v42 --aspect 16:9
+  bash bin/jimeng-cli-free generate "极简产品海报" --reference ./ref.png --aspect 16:9 --mode reference
+  bash bin/jimeng-cli-free generate "极简产品海报" --reference https://example.com/ref.png --mode reference
+  bash bin/jimeng-cli-free generate "极简产品海报" --clipboard --mode reference
+  bash bin/jimeng-cli-free edit ./input.png "把主体改成水彩插画风格" --model high_aes_general_v42 --aspect 16:9
 EOF
 }
 
@@ -38,6 +46,15 @@ case "$cmd" in
       exec bash "$SCRIPTS_DIR/generate_image.sh" --prompt "$prompt" "$@"
     fi
     exec bash "$SCRIPTS_DIR/generate_image.sh" "$@"
+    ;;
+  edit)
+    if [[ $# -ge 2 && "${1:0:2}" != "--" && "${2:0:2}" != "--" ]]; then
+      image="$1"
+      prompt="$2"
+      shift 2
+      exec bash "$SCRIPTS_DIR/edit_image.sh" --image "$image" --prompt "$prompt" "$@"
+    fi
+    exec bash "$SCRIPTS_DIR/edit_image.sh" "$@"
     ;;
   help|-h|--help)
     usage

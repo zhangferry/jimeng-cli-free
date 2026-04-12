@@ -1,14 +1,14 @@
-name: jimeng-image-gen-opencli
-description: 当用户说“使用即梦”“使用即梦生成图片”或想用 OpenCLI 驱动即梦网页端稳定生图、自动安装/检测 opencli 与浏览器插件、同步私有 runtime 里的 jimeng 模型/比例/stale-page 修复，并把 4 张结果图下载到本地 output 目录时使用。
+name: jimeng-cli-free
+description: 当用户说“使用即梦”“使用即梦生成图片”或想用 jimeng-cli-free 稳定驱动即梦网页端生图、自动安装/检测浏览器插件、同步私有 runtime 里的 jimeng 模型/比例/stale-page 修复，并把 4 张结果图下载到本地 output 目录时使用。
 ---
 
-# Jimeng Image Gen OpenCLI
+# jimeng-cli-free
 
 这个 skill 负责三件事：
 
-1. 安装或检测 `opencli` 与浏览器插件
-2. 在 skill 目录内维护一份受控的私有 OpenCLI runtime，并同步 `leigegehaha/OpenCLI` 里针对 `jimeng generate` 的增强补丁
-3. 用即梦网页端生成图片，并把每次生成的 4 张图下载到本 skill 的 `output/` 目录
+1. 安装或检测命令行环境与浏览器插件
+2. 在 skill 目录内维护一份受控的私有 runtime，并同步 `leigegehaha/OpenCLI` 里针对 `jimeng generate` 的增强补丁
+3. 用即梦网页端生成图片、参考图生图或基于本地图片做改图，并把每次生成的 4 张图下载到本 skill 的 `output/` 目录
 
 ## 文件
 
@@ -16,8 +16,8 @@ description: 当用户说“使用即梦”“使用即梦生成图片”或想�
 - 状态：`info.json`
 - 输出目录：`output/`
 - 脚本目录：`scripts/`
-- 用户入口：`bin/jimeng-image`
-- 别名入口：`bin/jimeng-image-gen-opencli`
+- 主入口：`bin/jimeng-cli-free`
+- 兼容入口：`bin/jimeng-image`（仅兼容旧调用）
 
 ## 默认规则
 
@@ -77,9 +77,9 @@ bash scripts/ensure_opencli_and_jimeng.sh
 
 这个脚本会：
 
-- 检查系统 `opencli` 是否已安装；若未安装则自动执行 `npm install -g @jackwener/opencli` 作为通用命令入口
-- 构建并检查本 skill 私有的 OpenCLI runtime；后续即梦能力默认走这份私有 runtime，而不是系统全局 `opencli`
-- 下载 OpenCLI 浏览器插件到 skill 目录下的 `downloads/`
+- 检查系统命令入口是否已安装；若未安装则自动执行 `npm install -g @jackwener/opencli`
+- 构建并检查本 skill 私有 runtime；后续即梦能力默认走这份私有 runtime，而不是系统全局环境
+- 下载浏览器插件到 skill 目录下的 `downloads/`
 - 提醒用户去浏览器里加载插件
 - 如果 `info.json` 里显示最近一次私有 runtime、`doctor` 和 `jimeng` 检测已成功，则跳过重复检测
 - 否则执行私有 runtime 的 `doctor`
@@ -111,7 +111,38 @@ bash scripts/sync_fork_patch.sh
 准备好参数后执行：
 
 ```bash
-bash bin/jimeng-image generate "<用户提示词>" --model "<模型>" --aspect "<比例>"
+bash bin/jimeng-cli-free generate "<用户提示词>" --model "<模型>" --aspect "<比例>"
+```
+
+如果要使用参考图生图：
+
+```bash
+bash bin/jimeng-cli-free generate "<用户提示词>" --reference "/path/to/ref.png" --mode reference
+```
+
+也支持图片 URL 或系统剪贴板：
+
+```bash
+bash bin/jimeng-cli-free generate "<用户提示词>" --reference "https://example.com/ref.png" --mode reference
+bash bin/jimeng-cli-free generate "<用户提示词>" --clipboard --mode reference
+```
+
+参考图支持：
+
+- 本地图片路径
+- 图片 URL
+- 系统剪贴板图片
+
+参考图建议模型：
+
+- 优先使用 `high_aes_general_v50`（图片 5.0 Lite）
+- 其次推荐 `high_aes_general_v42`（图片 4.6）
+- 也推荐 `high_aes_general_v45`（图片 4.5）
+
+如果要使用图片编辑：
+
+```bash
+bash bin/jimeng-cli-free edit "/path/to/input.png" "<用户提示词>" --model "<模型>" --aspect "<比例>"
 ```
 
 或执行底层脚本：
@@ -130,16 +161,28 @@ bash scripts/generate_image.sh \
 - `--model` 可选，默认取 `config.json`
 - `--aspect` 可选，默认取 `config.json`
 - `--workspace` 可选，默认取 `config.json`
+- `--reference` 可选，可传入本地图片路径、图片 URL 或 `clipboard`
+- `--reference-url` 可选，显式传入图片 URL
+- `--clipboard` 可选，直接使用系统剪贴板中的图片
+- `--mode` 可选，支持 `text`、`reference`、`edit`
 
 脚本行为：
 
 - 自动重跑环境检测与 fork 同步
-- 调用 skill 私有 runtime 的 `opencli jimeng generate`
+- 调用 skill 私有 runtime 的 `jimeng generate`
 - 若失败或没有拿到图片，最多重试 2 次
 - 每次成功生成后创建新的时间戳输出目录
 - 将即梦返回的 4 张图片下载到该目录
 - 按 `config.json` 的输出格式把 `webp` 自动转换为 `png` 或 `jpg`
 - 自动打开 `output/` 目录，并提醒用户查看
+
+图片编辑底层脚本：
+
+```bash
+bash scripts/edit_image.sh \
+  --image "/path/to/input.png" \
+  --prompt "<编辑提示词>"
+```
 
 ## 输出约定
 
@@ -156,12 +199,12 @@ bash scripts/generate_image.sh \
 
 ## 失败处理
 
-如果下载失败但 `opencli` 返回了图片链接：
+如果下载失败但 runtime 返回了图片链接：
 
 - 先重试下载
-- 仍失败时，再调用一次 `opencli jimeng generate` 获取当前任务图片
+- 仍失败时，再调用一次 `jimeng generate` 获取当前任务图片
 
-如果 `opencli jimeng generate` 整体失败：
+如果 `jimeng generate` 整体失败：
 
 - 最多重复提交 2 次
 - 仍失败就停止，并把最后一次 stderr/JSON 结果告诉用户
@@ -169,7 +212,7 @@ bash scripts/generate_image.sh \
 ## 注意
 
 - 这个 skill 会真实消耗即梦额度
-- 即梦相关能力默认走 skill 自带的私有 OpenCLI runtime，尽量避免受到系统全局 `opencli` 升级的影响
+- 即梦相关能力默认走 skill 自带的私有 runtime，尽量避免受到系统全局环境升级的影响
 - 私有 runtime 默认优先使用固定 commit 归档包，而不是直接追踪 fork 分支 HEAD；这样更利于复现和分发
 - 除非用户明确要求，默认使用：
   - `high_aes_general_v50`

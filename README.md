@@ -1,4 +1,4 @@
-# 🎨 jimeng-image-gen-opencli
+# 🎨 jimeng-cli-free
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS-black)](#-环境要求)
@@ -7,8 +7,8 @@
 
 [🇺🇸 English](./README.en.md)
 
-一个专门用于**即梦网页端生图**的本地 skill。  
-支持模型选择、比例选择、稳定自动化、原图下载，以及自动将 `webp` 转成 `png/jpg`。
+一个专门用于**即梦网页端生图**的本地技能。  
+支持模型选择、比例选择、稳定自动化、参考图上传、图片编辑、原图下载，以及自动将 `webp` 转成 `png/jpg`。
 
 ![Hero Banner](./assets/hero-banner.svg)
 
@@ -36,6 +36,14 @@
   - `2:3`
   - `9:16`
 - 📥 每次自动下载 4 张结果图到本地 `output/`
+- 🖼️ 支持上传参考图：
+  - 本地图片路径
+  - 图片 URL
+  - 系统剪贴板中的图片
+- 💡 如果上传参考图，建议优先使用：
+  - `high_aes_general_v50`：图片5.0 Lite
+  - `high_aes_general_v42`：图片4.6
+  - `high_aes_general_v45`：图片4.5
 - 🔄 默认把下载结果转成 `png`，也可改成 `jpg` 或 `webp`
 - 🔓 项目采用 **Apache-2.0** 开源协议
 
@@ -52,14 +60,14 @@
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/leigegehaha/jimeng-image-gen-opencli.git
-cd jimeng-image-gen-opencli
+git clone https://github.com/leigegehaha/jimeng-cli-free.git
+cd jimeng-cli-free
 ```
 
 ### 2. 准备环境
 
 ```bash
-bash bin/jimeng-image ensure
+bash bin/jimeng-cli-free ensure
 ```
 
 这一步会做两件事：
@@ -122,16 +130,30 @@ downloads/opencli-extension/unpacked
 ### 5. 开始生图
 
 ```bash
-bash bin/jimeng-image generate "青绿色玻璃建筑与植物，横版海报" --model high_aes_general_v42 --aspect 16:9
+bash bin/jimeng-cli-free generate "青绿色玻璃建筑与植物，横版海报" --model high_aes_general_v42 --aspect 16:9
 ```
+
+支持参考图上传：
+
+```bash
+bash bin/jimeng-cli-free generate "保留主体构图，改成电影海报风格" --reference ./ref.png --mode reference
+bash bin/jimeng-cli-free generate "保留主体构图，改成电影海报风格" --reference https://example.com/ref.png --mode reference
+bash bin/jimeng-cli-free generate "保留主体构图，改成电影海报风格" --clipboard --mode reference
+```
+
+如果上传参考图，建议优先使用以下模型：
+
+- `high_aes_general_v50`：图片 5.0 Lite
+- `high_aes_general_v42`：图片 4.6
+- `high_aes_general_v45`：图片 4.5
 
 如果你想在生成前再次检查环境，可以执行：
 
 ```bash
-bash bin/jimeng-image ensure
+bash bin/jimeng-cli-free ensure
 ```
 
-## 🤖 安装到多个 Agent
+## 🤖 安装到多个 Agent / 智能体
 
 ```bash
 bash scripts/install_links.sh
@@ -169,7 +191,7 @@ bash scripts/install_links.sh
 
 ## 🧭 后续开发计划
 
-1. 添加图生图 / 图片编辑功能
+1. 继续增强参考图生图与图片编辑体验
 2. 持续修复 bug 与稳定性问题
 3. 添加视频生成功能
 
@@ -199,7 +221,7 @@ bash scripts/install_links.sh
 
 额外建议：
 
-- 首次使用时，先执行一次 `bash bin/jimeng-image ensure`
+- 首次使用时，先执行一次 `bash bin/jimeng-cli-free ensure`
 - 如果插件刚安装，先完全关闭并重新打开浏览器再试
 - 如果不确定插件目录，优先检查 `downloads/opencli-extension/unpacked`
 - 如果页面卡住或没返回结果，先检查浏览器窗口里即梦页面是否仍处于可操作状态

@@ -9,9 +9,9 @@
   <rect x="72" y="70" width="232" height="40" rx="20" fill="#0F172A" stroke="#334155"/>
   <text x="102" y="96" fill="#7DD3FC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Dreamina Web Image Gen</text>
 
-  <text x="72" y="176" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="56" font-weight="800">jimeng-image-gen-opencli</text>
+  <text x="72" y="176" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="56" font-weight="800">jimeng-cli-free</text>
   <text x="72" y="228" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="28" font-weight="500">稳定驱动即梦网页端生图</text>
-  <text x="72" y="266" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="28" font-weight="500">支持模型、比例、原图下载与本地输出</text>
+  <text x="72" y="266" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="28" font-weight="500">支持参考图上传、模型比例控制与本地输出</text>
 
   <text x="72" y="330" fill="#94A3B8" font-family="Arial, sans-serif" font-size="22">无需高阶会员 · 建议最低会员 · 账号有积分即可理论上持续生成</text>
 
@@ -31,16 +31,16 @@
   <g>
     <rect x="772" y="86" width="414" height="328" rx="24" fill="#0B1220" stroke="#334155" stroke-width="2"/>
     <rect x="796" y="112" width="366" height="46" rx="14" fill="#111827"/>
-    <text x="820" y="141" fill="#E2E8F0" font-family="Courier New, monospace" font-size="20">bash bin/jimeng-image generate ...</text>
+    <text x="810" y="141" fill="#E2E8F0" font-family="Courier New, monospace" font-size="18">bash bin/jimeng-cli-free generate ...</text>
 
     <rect x="796" y="182" width="168" height="94" rx="16" fill="url(#card1)"/>
     <rect x="994" y="182" width="168" height="94" rx="16" fill="url(#card2)"/>
     <rect x="796" y="294" width="168" height="94" rx="16" fill="url(#card3)"/>
     <rect x="994" y="294" width="168" height="94" rx="16" fill="url(#card4)"/>
 
-    <text x="826" y="240" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Model 4.6</text>
-    <text x="1023" y="240" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">16:9 Ratio</text>
-    <text x="826" y="352" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Original Links</text>
+    <text x="814" y="240" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Ref Image Ready</text>
+    <text x="1020" y="240" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">16:9 Ratio</text>
+    <text x="814" y="352" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Model 5.0 Lite</text>
     <text x="1028" y="352" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">Local Output</text>
   </g>
 

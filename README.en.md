@@ -1,4 +1,4 @@
-# 🎨 jimeng-image-gen-opencli
+# 🎨 jimeng-cli-free
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS-black)](#-requirements)
@@ -8,7 +8,7 @@
 [🇨🇳 中文](./README.md)
 
 A local skill focused on **image generation through the Dreamina web app**.  
-It supports model selection, aspect ratio control, stable browser automation, original image download, and automatic `webp -> png/jpg` conversion.
+It supports model selection, aspect ratio control, stable browser automation, reference-image upload, image editing, original image download, and automatic `webp -> png/jpg` conversion.
 
 ![Hero Banner](./assets/hero-banner.svg)
 
@@ -36,6 +36,14 @@ It supports model selection, aspect ratio control, stable browser automation, or
   - `2:3`
   - `9:16`
 - 📥 Downloads all 4 generated images into the local `output/` folder
+- 🖼️ Supports uploading reference images from:
+  - local image files
+  - image URLs
+  - the system clipboard
+- 💡 If you upload a reference image, the recommended models are:
+  - `high_aes_general_v50`: Image 5.0 Lite
+  - `high_aes_general_v42`: Image 4.6
+  - `high_aes_general_v45`: Image 4.5
 - 🔄 Converts downloaded images to `png` by default, with optional `jpg` or `webp`
 - 🔓 Licensed under **Apache-2.0**
 
@@ -52,14 +60,14 @@ It supports model selection, aspect ratio control, stable browser automation, or
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/leigegehaha/jimeng-image-gen-opencli.git
-cd jimeng-image-gen-opencli
+git clone https://github.com/leigegehaha/jimeng-cli-free.git
+cd jimeng-cli-free
 ```
 
 ### 2. Prepare the environment
 
 ```bash
-bash bin/jimeng-image ensure
+bash bin/jimeng-cli-free ensure
 ```
 
 This step does two important things:
@@ -121,13 +129,27 @@ Then log in and make sure the page is usable.
 ### 5. Generate images
 
 ```bash
-bash bin/jimeng-image generate "Green glass architecture with plants, landscape poster" --model high_aes_general_v42 --aspect 16:9
+bash bin/jimeng-cli-free generate "Green glass architecture with plants, landscape poster" --model high_aes_general_v42 --aspect 16:9
 ```
+
+Reference-image upload is also supported:
+
+```bash
+bash bin/jimeng-cli-free generate "Keep the main composition, turn it into a cinematic poster" --reference ./ref.png --mode reference
+bash bin/jimeng-cli-free generate "Keep the main composition, turn it into a cinematic poster" --reference https://example.com/ref.png --mode reference
+bash bin/jimeng-cli-free generate "Keep the main composition, turn it into a cinematic poster" --clipboard --mode reference
+```
+
+For reference-image workflows, the recommended models are:
+
+- `high_aes_general_v50`: Image 5.0 Lite
+- `high_aes_general_v42`: Image 4.6
+- `high_aes_general_v45`: Image 4.5
 
 If you want to verify the environment again before generating, run:
 
 ```bash
-bash bin/jimeng-image ensure
+bash bin/jimeng-cli-free ensure
 ```
 
 ## 🤖 Install Into Agents
@@ -168,7 +190,7 @@ Edit [config.json](./config.json):
 
 ## 🧭 Roadmap
 
-1. Add image-to-image and image editing support
+1. Keep improving reference-image generation and image editing
 2. Continue fixing bugs and stability issues
 3. Add video generation support
 
@@ -198,7 +220,7 @@ If the project does not work as expected, check these first:
 
 Extra suggestions:
 
-- Run `bash bin/jimeng-image ensure` first
+- Run `bash bin/jimeng-cli-free ensure` first
 - If the extension was just installed, fully restart the browser once
 - If you are not sure where the extension directory is, check `downloads/opencli-extension/unpacked`
 - If the page appears stuck, inspect whether the Dreamina page is still interactive in the browser window

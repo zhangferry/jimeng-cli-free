@@ -1,19 +1,19 @@
-// Derived from the jimeng generate adapter in jackwener/opencli (Apache-2.0).
-// Modified in this repository to improve Dreamina stability, model/aspect control,
-// original-image extraction, and local reference-image workflows.
+// Derived from the jimeng browser adapter flow in jackwener/opencli (Apache-2.0).
+// Modified in this repository to add local image based edit/reference workflows.
 import { cli, Strategy } from '@jackwener/opencli/registry';
 import { JIMENG_DOMAIN, buildJimengGenerateFunc } from './_shared.js';
 
 cli({
   site: 'jimeng',
-  name: 'generate',
-  description: '即梦AI 文生图 / 参考图生图 — 输入 prompt 生成图片',
+  name: 'edit',
+  description: '即梦AI 图片编辑/参考图改图 — 输入本地图片和 prompt 生成新图片',
   domain: JIMENG_DOMAIN,
   strategy: Strategy.COOKIE,
   browser: true,
   timeoutSeconds: 300,
   args: [
-    { name: 'prompt', type: 'string', required: true, positional: true, help: '图片描述 prompt' },
+    { name: 'image', type: 'string', required: true, positional: true, help: '本地参考图片路径' },
+    { name: 'prompt', type: 'string', required: true, positional: true, help: '编辑提示词 prompt' },
     {
       name: 'model',
       type: 'string',
@@ -33,9 +33,8 @@ cli({
       help: '工作区 ID；默认使用 workspace=0',
     },
     { name: 'wait', type: 'int', default: 40, help: '等待生成完成的秒数' },
-    { name: 'reference', type: 'string', help: '本地参考图片路径，用于参考图生图' },
-    { name: 'mode', type: 'string', default: 'text', help: '生成模式：text/reference/edit；默认 text' },
+    { name: 'mode', type: 'string', default: 'edit', help: '编辑模式，默认 edit；若页面未命中编辑入口会回退到 reference' },
   ],
   columns: ['status', 'prompt', 'image_count', 'image_urls', 'mode', 'reference_file'],
-  func: buildJimengGenerateFunc({ defaultMode: 'text', requireReference: false }),
+  func: buildJimengGenerateFunc({ defaultMode: 'edit', requireReference: true }),
 });

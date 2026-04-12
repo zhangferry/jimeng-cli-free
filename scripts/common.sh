@@ -8,10 +8,12 @@ INFO_FILE="$SKILL_DIR/info.json"
 OUTPUT_DIR="$SKILL_DIR/output"
 DOWNLOADS_DIR="$SKILL_DIR/downloads"
 VENDOR_DIR="$SKILL_DIR/vendor"
+TMP_DIR="$SKILL_DIR/tmp"
 OPENCLI_VENDOR_REPO_DIR="$VENDOR_DIR/OpenCLI"
 OPENCLI_VENDOR_MAIN_JS="$OPENCLI_VENDOR_REPO_DIR/dist/src/main.js"
 OPENCLI_VENDOR_PACKAGE_JSON="$OPENCLI_VENDOR_REPO_DIR/package.json"
 RUNTIME_CACHE_DIR="$DOWNLOADS_DIR/runtime-cache"
+OPENCLI_SANDBOX_HOME="$SKILL_DIR/.runtime-home"
 
 python_json_get() {
   local file="$1"
@@ -124,5 +126,5 @@ PY
 }
 
 log() {
-  printf '[jimeng-image-gen-opencli] %s\n' "$*"
+  printf '[jimeng-cli-free] %s\n' "$*"
 }

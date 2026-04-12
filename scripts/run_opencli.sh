@@ -10,4 +10,6 @@ if ! skill_opencli_ready; then
   exit 1
 fi
 
-exec node "$OPENCLI_VENDOR_MAIN_JS" "$@"
+mkdir -p "$OPENCLI_SANDBOX_HOME"
+
+exec env HOME="$OPENCLI_SANDBOX_HOME" node "$OPENCLI_VENDOR_MAIN_JS" "$@"
