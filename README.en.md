@@ -15,6 +15,7 @@ It supports model selection, aspect ratio control, stable browser automation, or
 ## ✨ Highlights
 
 - 🚀 Works with the Dreamina web app without requiring a high-tier membership
+- 🆓 In practice, image generation can remain effectively free as long as your Dreamina account still has usable credits
 - 💡 Using the lowest Dreamina membership is recommended for a smoother generation experience
 - 🖼️ Supports these models:
   - `high_aes_general_v50`: Image 5.0 Lite
@@ -99,6 +100,43 @@ Edit [config.json](./config.json):
 - The first run consumes Dreamina credits
 - Log in to `https://jimeng.jianying.com` before use
 - The browser extension must be loaded manually from the unpacked directory
+
+## 🧭 Roadmap
+
+1. Add image-to-image and image editing support
+2. Continue fixing bugs and stability issues
+3. Add video generation support
+
+Note:
+- Video generation will likely be developed as a separate plugin to keep it decoupled from image generation
+
+## ⚠️ Important Notes
+
+- This project was built entirely with `vibe coding`, mainly using the `GLM 5.1` model
+- The code has **not gone through full human review**, so unknown bugs and edge cases may still exist
+- The project has been tested successfully on **macOS**
+- **Windows** and **Linux** should be possible in theory, but terminal behavior, browser invocation, and path handling may differ and introduce unknown bugs
+- If something breaks on Windows or Linux, PRs are welcome, and using Claude, Codex, GLM 5.1, or other AI tools for diagnosis is encouraged
+- In the AI era, use AI well
+
+## 🛠️ Troubleshooting
+
+If the project does not work as expected, check these first:
+
+1. Is the browser installed correctly and currently open?
+2. Is the browser extension installed and loaded correctly?
+3. Are you logged in to Dreamina in that browser?
+4. Does the account still have usable credits?
+5. Can your network access GitHub, Dreamina, and extension-related resources?
+6. Are `node`, `npm`, `git`, `gh`, `curl`, `tar`, and `unzip` installed?
+7. Are you running on a non-macOS platform? If yes, treat platform differences as a likely cause first
+
+Extra suggestions:
+
+- Run `bash bin/jimeng-image ensure` first
+- If the extension was just installed, fully restart the browser once
+- If the page appears stuck, inspect whether the Dreamina page is still interactive in the browser window
+- If no new images appear in the output folder, inspect `result.stderr.log` and `result.json`
 
 ## ⚖️ License And Attribution
 
