@@ -52,6 +52,7 @@ if [[ -f "$zip_path" ]]; then
     mkdir -p "$unpack_dir"
     unzip -oq "$zip_path" -d "$unpack_dir"
   fi
+  bash "$SCRIPT_DIR/apply_extension_patch.sh"
   set_info_bool "extension_downloaded" "true"
   python_json_set "$INFO_FILE" "extension_zip" "$zip_path"
   python_json_set "$INFO_FILE" "extension_unpacked_dir" "$unpack_dir"

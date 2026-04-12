@@ -92,6 +92,11 @@ if [[ -d "$SKILL_DIR/overrides/jimeng" ]]; then
   log "已应用 skill 本地 jimeng 适配器覆盖补丁。"
 fi
 
+if [[ -f "$SKILL_DIR/overrides/extension/background.js" ]]; then
+  copy_file "$SKILL_DIR/overrides/extension/background.js" "$REPO_DIR/extension/dist/background.js"
+  log "已应用 skill 本地浏览器插件后台化补丁。"
+fi
+
 if [[ -f "$REPO_DIR/dist/src/build-manifest.js" ]]; then
   node "$REPO_DIR/dist/src/build-manifest.js" >/dev/null
   log "已刷新 skill 私有 runtime 的 cli-manifest.json。"

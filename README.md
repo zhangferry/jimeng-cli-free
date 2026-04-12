@@ -179,6 +179,7 @@ bash scripts/install_links.sh
 - `default_aspect`
 - `default_output_format`
 - `default_workspace`
+- `auto_create_workspace`
 - `runtime_source_mode`
 - `runtime_pinned_commit`
 

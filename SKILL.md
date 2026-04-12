@@ -1,3 +1,4 @@
+---
 name: jimeng-cli-free
 description: 当用户说“使用即梦”“使用即梦生成图片”或想用 jimeng-cli-free 稳定驱动即梦网页端生图、自动安装/检测浏览器插件、同步私有 runtime 里的 jimeng 模型/比例/stale-page 修复，并把 4 张结果图下载到本地 output 目录时使用。
 ---
@@ -35,6 +36,7 @@ description: 当用户说“使用即梦”“使用即梦生成图片”或想�
 如果用户没有明确说 workspace：
 
 - 默认 workspace 使用 `config.json` 的 `default_workspace`
+- 若 `config.json` 的 `auto_create_workspace` 为 `true` 且用户未显式传 `--workspace`，则每次生成前默认自动新建 workspace
 - 私有 runtime 来源默认使用 `config.json` 里的固定 commit 归档包
 
 ## 支持的模型

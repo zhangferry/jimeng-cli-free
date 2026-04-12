@@ -365,7 +365,7 @@ async function collectGenerationResult(page, { prompt, aspect, model, waitSecond
       const seen = new WeakSet();
       const found = [];
       const visit = (value, p, depth) => {
-        if (!value || depth > 4) return;
+        if (!value || depth > 8) return;
         if (typeof value === 'string') {
           const score = scoreImageUrl(value, p);
           if (score >= 0) found.push({ url: value, score, path: p });
@@ -442,11 +442,14 @@ async function collectGenerationResult(page, { prompt, aspect, model, waitSecond
           const hasModel = text.includes(modelLabel);
           const hasAspect = aspect ? text.includes(aspect) : false;
           const isReferenceCard = /已找到\\d+张|灵感参考/.test(text);
+          const rect = current.getBoundingClientRect();
+          const recencyScore = Math.round(Math.max(rect.y, 0));
           const score = (hasModel ? 3000 : 0)
             + (hasAspect ? 800 : 0)
             + (hasResultActions ? 500 : 0)
             + (hasProgress ? 300 : 0)
             + (urls.length === 4 ? 400 : 0)
+            + recencyScore
             - (Math.abs(urls.length - 4) * 900)
             - text.length;
           if (urls.length > 0 || hasProgress || hasResultActions) {

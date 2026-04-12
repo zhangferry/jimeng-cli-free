@@ -19,6 +19,7 @@ REFERENCE=""
 REFERENCE_URL=""
 USE_CLIPBOARD="false"
 MODE=""
+WORKSPACE_EXPLICIT="false"
 
 mkdir -p "$TMP_DIR"
 
@@ -153,12 +154,55 @@ assert_reference_is_image() {
   esac
 }
 
+resolve_workspace() {
+  local requested="$1"
+  local explicit="$2"
+  local fallback
+  local auto_create
+  local ws_json
+  local ws_id
+
+  fallback="$(config_get default_workspace)"
+  auto_create="$(config_get auto_create_workspace)"
+
+  if [[ "$explicit" == "true" && -n "$requested" ]]; then
+    printf '%s\n' "$requested"
+    return
+  fi
+
+  if [[ "$auto_create" == "true" ]]; then
+    log "本次生成默认新建 workspace，降低命中旧结果的风险。" >&2
+    ws_json="$(bash "$RUN_OPENCLI" jimeng new -f json 2>/dev/null || true)"
+    ws_id="$(python3 - <<'PY' "$ws_json"
+import json, sys
+raw = sys.argv[1]
+try:
+    data = json.loads(raw)
+    if isinstance(data, list) and data:
+        print(str(data[0].get("workspace_id", "")))
+    else:
+        print("")
+except Exception:
+    print("")
+PY
+)"
+    if [[ -n "$ws_id" ]]; then
+      log "已创建新的 workspace：$ws_id" >&2
+      printf '%s\n' "$ws_id"
+      return
+    fi
+    log "新建 workspace 失败，回退到默认 workspace：$fallback" >&2
+  fi
+
+  printf '%s\n' "${requested:-$fallback}"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --prompt) PROMPT="${2:-}"; shift 2 ;;
     --model) MODEL="${2:-}"; shift 2 ;;
     --aspect) ASPECT="${2:-}"; shift 2 ;;
-    --workspace) WORKSPACE="${2:-}"; shift 2 ;;
+    --workspace) WORKSPACE="${2:-}"; WORKSPACE_EXPLICIT="true"; shift 2 ;;
     --format) OUTPUT_FORMAT="${2:-}"; shift 2 ;;
     --reference|--image) REFERENCE="${2:-}"; shift 2 ;;
     --reference-url|--image-url) REFERENCE_URL="${2:-}"; shift 2 ;;
@@ -178,7 +222,6 @@ fi
 
 MODEL="${MODEL:-$(config_get default_model)}"
 ASPECT="${ASPECT:-$(config_get default_aspect)}"
-WORKSPACE="${WORKSPACE:-$(config_get default_workspace)}"
 OUTPUT_FORMAT="${OUTPUT_FORMAT:-$(config_get default_output_format)}"
 WAIT_SECONDS="$(config_get generate_wait_seconds)"
 MAX_ATTEMPTS="$(config_get max_generate_attempts)"
@@ -196,6 +239,7 @@ esac
 
 bash "$SCRIPT_DIR/ensure_opencli_and_jimeng.sh"
 bash "$SCRIPT_DIR/sync_fork_patch.sh"
+WORKSPACE="$(resolve_workspace "$WORKSPACE" "$WORKSPACE_EXPLICIT")"
 
 attempt=1
 success="false"

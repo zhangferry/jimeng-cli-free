@@ -7,6 +7,7 @@
   "default_aspect": "9:16",
   "default_output_format": "png",
   "default_workspace": "0",
+  "auto_create_workspace": true,
   "opencli_package": "@jackwener/opencli",
   "extension_repo": "jackwener/opencli",
   "extension_asset_pattern": "opencli-extension.*\\.zip",
