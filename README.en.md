@@ -10,6 +10,8 @@
 A local skill focused on **image generation through the Dreamina web app**.  
 It supports model selection, aspect ratio control, stable browser automation, original image download, and automatic `webp -> png/jpg` conversion.
 
+![Hero Banner](./assets/hero-banner.svg)
+
 ![Workflow](./assets/flow-overview.svg)
 
 ## ✨ Highlights
@@ -143,3 +145,10 @@ Extra suggestions:
 - This project is licensed under [Apache-2.0](./LICENSE)
 - This repository includes modified derivative work based on an upstream project; see [NOTICE](./NOTICE)
 - Upstream attribution is retained to avoid license misapplication
+
+## 🌐 GitHub Presentation Notes
+
+- The repository homepage already includes a workflow overview and demo board
+- A dedicated social preview image is also included:
+  - [assets/social-preview.svg](./assets/social-preview.svg)
+- GitHub CLI does not currently expose direct social preview image configuration, so uploading this file manually in repository settings is recommended

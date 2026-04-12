@@ -10,6 +10,8 @@
 一个专门用于**即梦网页端生图**的本地 skill。  
 支持模型选择、比例选择、稳定自动化、原图下载，以及自动将 `webp` 转成 `png/jpg`。
 
+![Hero Banner](./assets/hero-banner.svg)
+
 ![Workflow](./assets/flow-overview.svg)
 
 ## ✨ 项目特色
@@ -143,3 +145,10 @@ bash scripts/install_links.sh
 - 本项目采用 [Apache-2.0](./LICENSE)
 - 本项目包含基于上游项目修改而来的衍生代码，详见 [NOTICE](./NOTICE)
 - 上游来源与归属说明已保留，以避免许可证适用错误
+
+## 🌐 GitHub 展示建议
+
+- 仓库首页已经包含流程图和 demo 展示板
+- 额外提供了一张可作为 GitHub Social Preview 的图片：
+  - [assets/social-preview.svg](./assets/social-preview.svg)
+- 由于 GitHub CLI 当前不支持直接设置仓库 Social Preview 图片，建议你在仓库设置页手动上传这张图
