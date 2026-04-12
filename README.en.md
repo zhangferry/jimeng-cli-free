@@ -62,10 +62,72 @@ cd jimeng-image-gen-opencli
 bash bin/jimeng-image ensure
 ```
 
-### 3. Generate images
+This step does two important things:
+
+- Downloads the browser extension into the local `downloads/` directory
+- Checks browser connectivity and Dreamina login state
+
+After the download, the extension is typically located at:
+
+- Zip file: `downloads/opencli-extension.zip`
+- Unpacked directory: `downloads/opencli-extension/unpacked`
+
+### 3. Manually load the browser extension
+
+This is a critical first-run step.
+
+#### Chrome
+
+1. Open `chrome://extensions`
+2. Enable `Developer mode`
+3. Click `Load unpacked`
+4. Select this directory from the repository:
+
+```bash
+downloads/opencli-extension/unpacked
+```
+
+#### Edge
+
+1. Open `edge://extensions`
+2. Enable `Developer mode`
+3. Click `Load unpacked`
+4. Select this directory from the repository:
+
+```bash
+downloads/opencli-extension/unpacked
+```
+
+#### How to verify the extension is loaded
+
+- You can see the extension on the browser extensions page
+- The extension is enabled
+- The browser should remain open with at least one window
+
+If this step is missing or incorrect, later commands usually fail with errors such as:
+
+- browser not connected
+- extension not installed
+- failed to extract page data
+
+### 4. Log in to Dreamina
+
+In the same browser where the extension was loaded, open:
+
+- `https://jimeng.jianying.com`
+
+Then log in and make sure the page is usable.
+
+### 5. Generate images
 
 ```bash
 bash bin/jimeng-image generate "Green glass architecture with plants, landscape poster" --model high_aes_general_v42 --aspect 16:9
+```
+
+If you want to verify the environment again before generating, run:
+
+```bash
+bash bin/jimeng-image ensure
 ```
 
 ## 🤖 Install Into Agents
@@ -102,6 +164,7 @@ Edit [config.json](./config.json):
 - The first run consumes Dreamina credits
 - Log in to `https://jimeng.jianying.com` before use
 - The browser extension must be loaded manually from the unpacked directory
+- If the extension is not loaded correctly, the project usually will not work
 
 ## 🧭 Roadmap
 
@@ -137,6 +200,7 @@ Extra suggestions:
 
 - Run `bash bin/jimeng-image ensure` first
 - If the extension was just installed, fully restart the browser once
+- If you are not sure where the extension directory is, check `downloads/opencli-extension/unpacked`
 - If the page appears stuck, inspect whether the Dreamina page is still interactive in the browser window
 - If no new images appear in the output folder, inspect `result.stderr.log` and `result.json`
 

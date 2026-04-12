@@ -62,10 +62,73 @@ cd jimeng-image-gen-opencli
 bash bin/jimeng-image ensure
 ```
 
-### 3. 开始生图
+这一步会做两件事：
+
+- 下载浏览器插件到本地 `downloads/`
+- 检查浏览器与即梦登录状态
+
+插件下载完成后，默认位置通常是：
+
+- 压缩包：`downloads/opencli-extension.zip`
+- 解压目录：`downloads/opencli-extension/unpacked`
+
+### 3. 在浏览器中手动加载插件
+
+这是关键步骤，首次使用必须完成。
+
+#### Chrome 加载方式
+
+1. 打开 `chrome://extensions`
+2. 打开右上角 `开发者模式`
+3. 点击 `加载已解压的扩展程序`
+4. 选择仓库里的目录：
+
+```bash
+downloads/opencli-extension/unpacked
+```
+
+#### Edge 加载方式
+
+1. 打开 `edge://extensions`
+2. 打开左侧或右上角的 `开发人员模式`
+3. 点击 `加载解压缩的扩展`
+4. 选择仓库里的目录：
+
+```bash
+downloads/opencli-extension/unpacked
+```
+
+#### 如何确认插件已正确加载
+
+- 浏览器扩展页面里可以看到新加载的插件
+- 插件状态应为已启用
+- 浏览器不要处于完全关闭状态，建议保持至少一个窗口打开
+
+如果这一步没做对，后续生成通常会报：
+
+- 浏览器未连接
+- 插件未安装
+- 无法获取页面数据
+
+### 4. 登录即梦网页端
+
+在刚刚加载插件的同一个浏览器里打开：
+
+- `https://jimeng.jianying.com`
+
+然后完成登录。  
+建议直接打开即梦生图页面并确认页面可正常操作。
+
+### 5. 开始生图
 
 ```bash
 bash bin/jimeng-image generate "青绿色玻璃建筑与植物，横版海报" --model high_aes_general_v42 --aspect 16:9
+```
+
+如果你想在生成前再次检查环境，可以执行：
+
+```bash
+bash bin/jimeng-image ensure
 ```
 
 ## 🤖 安装到多个 Agent
@@ -102,6 +165,7 @@ bash scripts/install_links.sh
 - 首次运行会真实消耗即梦额度
 - 使用前请先在浏览器登录 `https://jimeng.jianying.com`
 - 浏览器插件需要从 unpacked 目录手动加载
+- 如果插件未正确加载，项目基本无法正常工作
 
 ## 🧭 后续开发计划
 
@@ -137,6 +201,7 @@ bash scripts/install_links.sh
 
 - 首次使用时，先执行一次 `bash bin/jimeng-image ensure`
 - 如果插件刚安装，先完全关闭并重新打开浏览器再试
+- 如果不确定插件目录，优先检查 `downloads/opencli-extension/unpacked`
 - 如果页面卡住或没返回结果，先检查浏览器窗口里即梦页面是否仍处于可操作状态
 - 如果输出目录没有新图片，先看 `result.stderr.log` 和 `result.json`
 
