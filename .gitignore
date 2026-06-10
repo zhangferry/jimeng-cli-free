@@ -8,3 +8,5 @@ vendor/*
 .runtime-home/
 tmp/
 *.log
+info.json
+.omc/

@@ -11,6 +11,6 @@
   "opencli_package": "@jackwener/opencli",
   "extension_repo": "jackwener/opencli",
   "extension_asset_pattern": "opencli-extension.*\\.zip",
-  "generate_wait_seconds": 20,
+  "generate_wait_seconds": 60,
   "max_generate_attempts": 3
 }

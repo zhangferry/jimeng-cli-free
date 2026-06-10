@@ -314,7 +314,6 @@ PY
       python_json_set "$INFO_FILE" "last_generate_status" "$status"
       python_json_set "$INFO_FILE" "last_generate_output_dir" "$run_dir"
       log "图片已下载到：$run_dir"
-      open "$OUTPUT_DIR" >/dev/null 2>&1 || true
       echo "$run_dir"
       break
     fi
