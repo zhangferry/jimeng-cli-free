@@ -9,4 +9,5 @@ vendor/*
 tmp/
 *.log
 info.json
+.workspace-cache.json
 .omc/

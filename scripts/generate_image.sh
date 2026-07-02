@@ -2,6 +2,7 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
+source "$SCRIPT_DIR/workspace_cache.sh"
 
 require_cmd python3
 require_cmd curl
@@ -154,46 +155,85 @@ assert_reference_is_image() {
   esac
 }
 
-resolve_workspace() {
-  local requested="$1"
-  local explicit="$2"
-  local fallback
-  local auto_create
-  local ws_json
-  local ws_id
-
-  fallback="$(config_get default_workspace)"
-  auto_create="$(config_get auto_create_workspace)"
-
-  if [[ "$explicit" == "true" && -n "$requested" ]]; then
-    printf '%s\n' "$requested"
-    return
-  fi
-
-  if [[ "$auto_create" == "true" ]]; then
-    log "本次生成默认新建 workspace，降低命中旧结果的风险。" >&2
-    ws_json="$(bash "$RUN_OPENCLI" jimeng new -f json 2>/dev/null || true)"
-    ws_id="$(python3 - <<'PY' "$ws_json"
+# 调用即梦 API 新建一个会话，成功输出 workspace_id，失败输出空。
+jimeng_new_workspace() {
+  local ws_json ws_id
+  ws_json="$(bash "$RUN_OPENCLI" jimeng new -f json 2>/dev/null || true)"
+  ws_id="$(python3 - <<'PY' "$ws_json"
 import json, sys
 raw = sys.argv[1]
 try:
     data = json.loads(raw)
     if isinstance(data, list) and data:
-        print(str(data[0].get("workspace_id", "")))
+        print(str(data[0].get("workspace_id", "")).strip())
     else:
         print("")
 except Exception:
     print("")
 PY
 )"
+  printf '%s\n' "$ws_id"
+}
+
+# 解析本次生成使用哪个 workspace。
+# 策略由 config 的 workspace_reuse 决定：
+#   per_task   按 JIMENG_TASK_KEY 缓存复用（默认；无 key 时用 "default" 共享，兜底防爆）
+#   always_new 每次都新建（旧行为）
+#   fixed      永不新建，固定用 default_workspace
+resolve_workspace() {
+  local requested="$1"
+  local explicit="$2"
+  local mode fallback task_key cached ws_id
+
+  fallback="$(config_get default_workspace)"
+  [[ -z "$fallback" ]] && fallback="0"
+  mode="$(config_get workspace_reuse)"
+  [[ -z "$mode" ]] && mode="per_task"
+
+  # 显式 --workspace 指定优先
+  if [[ "$explicit" == "true" && -n "$requested" ]]; then
+    printf '%s\n' "$requested"
+    return
+  fi
+
+  # fixed：固定用默认 workspace，永不新建
+  if [[ "$mode" == "fixed" ]]; then
+    printf '%s\n' "${requested:-$fallback}"
+    return
+  fi
+
+  # always_new：旧行为，每次新建
+  if [[ "$mode" == "always_new" ]]; then
+    ws_id="$(jimeng_new_workspace)"
     if [[ -n "$ws_id" ]]; then
-      log "已创建新的 workspace：$ws_id" >&2
+      log "已新建 workspace：$ws_id" >&2
       printf '%s\n' "$ws_id"
       return
     fi
     log "新建 workspace 失败，回退到默认 workspace：$fallback" >&2
+    printf '%s\n' "${requested:-$fallback}"
+    return
   fi
 
+  # per_task（默认）：按任务标识缓存复用
+  task_key="${JIMENG_TASK_KEY:-default}"
+  cached="$(workspace_cache_get "$task_key")"
+  if [[ -n "$cached" ]]; then
+    log "复用任务 [$task_key] 的 workspace：$cached" >&2
+    printf '%s\n' "$cached"
+    return
+  fi
+
+  # 未命中：新建并缓存
+  ws_id="$(jimeng_new_workspace)"
+  if [[ -n "$ws_id" ]]; then
+    workspace_cache_set "$task_key" "$ws_id"
+    log "任务 [$task_key] 新建 workspace：$ws_id" >&2
+    printf '%s\n' "$ws_id"
+    return
+  fi
+
+  log "新建 workspace 失败，回退到默认 workspace：$fallback" >&2
   printf '%s\n' "${requested:-$fallback}"
 }
 
@@ -218,6 +258,18 @@ done
 if [[ -z "$PROMPT" ]]; then
   echo "--prompt 必填" >&2
   exit 1
+fi
+
+# --model free：切换到配置的「免费/会员无限」模型；未配置则退回默认模型。
+if [[ "$MODEL" == "free" ]]; then
+  free_model="$(config_get default_free_model)"
+  if [[ -n "$free_model" ]]; then
+    MODEL="$free_model"
+    log "使用免费模型：$MODEL" >&2
+  else
+    MODEL=""
+    log "未配置 default_free_model，--model free 退回默认模型。请在 config.json 设置免费模型名称（即梦页面模型下拉里对应的文字）。" >&2
+  fi
 fi
 
 MODEL="${MODEL:-$(config_get default_model)}"

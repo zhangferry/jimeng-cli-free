@@ -35,8 +35,9 @@ description: 当用户说“使用即梦”“使用即梦生成图片”或想�
 
 如果用户没有明确说 workspace：
 
-- 默认 workspace 使用 `config.json` 的 `default_workspace`
-- 若 `config.json` 的 `auto_create_workspace` 为 `true` 且用户未显式传 `--workspace`，则每次生成前默认自动新建 workspace
+- 默认按**任务**复用同一个即梦对话，避免「每张图一个对话」导致账号对话数爆炸
+- 由 `config.json` 的 `workspace_reuse` 控制：`per_task`（默认，按 `JIMENG_TASK_KEY` 缓存复用）/ `always_new`（每次新建，旧行为）/ `fixed`（固定用 `default_workspace`，永不新建）
+- 调用方可通过环境变量 `JIMENG_TASK_KEY` 传入任务标识；未提供时所有调用共享一个 `default` 对话（兜底，不会再每图新建）
 - 私有 runtime 来源默认使用 `config.json` 里的固定 commit 归档包
 
 ## 支持的模型
@@ -46,10 +47,13 @@ description: 当用户说“使用即梦”“使用即梦生成图片”或想�
 - `high_aes_general_v45`：图片4.5
 - `high_aes_general_v41`：图片4.1
 - `high_aes_general_v40`：图片4.0
+- `free`：别名，切换到 `config.json` 的 `default_free_model`（会员免费/无限模型）；未配置则退回默认模型
+- 也支持直接传即梦下拉里的中文标签（如 `图片3.0`），无需在代码里注册
 
 默认值：
 
-- `high_aes_general_v50`
+- `high_aes_general_v50`（不传 `--model` 时）
+- 想用免费模型：在 `config.json` 的 `default_free_model` 填入即梦下拉里对应的文字，调用处传 `--model free`
 
 ## 支持的比例
 
@@ -160,7 +164,7 @@ bash scripts/generate_image.sh \
 参数规则：
 
 - `--prompt` 必填
-- `--model` 可选，默认取 `config.json`
+- `--model` 可选，默认取 `config.json`；传 `free` 切到 `default_free_model`
 - `--aspect` 可选，默认取 `config.json`
 - `--workspace` 可选，默认取 `config.json`
 - `--reference` 可选，可传入本地图片路径、图片 URL 或 `clipboard`
