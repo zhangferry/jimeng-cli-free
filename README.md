@@ -20,6 +20,7 @@
 - 🆓 理论上只要你的即梦账号还有积分，就可以继续生成图片
 - 💡 建议使用即梦最低会员，可获得更流畅的生图体验
 - 🖼️ 支持以下模型：
+  - `high_aes_general_v47`：图片4.7
   - `high_aes_general_v50`：图片5.0 Lite
   - `high_aes_general_v42`：图片4.6
   - `high_aes_general_v45`：图片4.5
@@ -35,15 +36,15 @@
   - `3:4`
   - `2:3`
   - `9:16`
-- 📥 每次自动下载 4 张结果图到本地 `output/`
+- 📥 每次自动下载 1 张结果图到本地 `output/`
 - 🖼️ 支持上传参考图：
   - 本地图片路径
   - 图片 URL
   - 系统剪贴板中的图片
 - 💡 如果上传参考图，建议优先使用：
+  - `high_aes_general_v47`：图片4.7
   - `high_aes_general_v50`：图片5.0 Lite
   - `high_aes_general_v42`：图片4.6
-  - `high_aes_general_v45`：图片4.5
 - 🔄 默认把下载结果转成 `png`，也可改成 `jpg` 或 `webp`
 - 🔓 项目采用 **Apache-2.0** 开源协议
 
@@ -143,9 +144,9 @@ bash bin/jimeng-cli-free generate "保留主体构图，改成电影海报风格
 
 如果上传参考图，建议优先使用以下模型：
 
+- `high_aes_general_v47`：图片 4.7
 - `high_aes_general_v50`：图片 5.0 Lite
 - `high_aes_general_v42`：图片 4.6
-- `high_aes_general_v45`：图片 4.5
 
 如果你想在生成前再次检查环境，可以执行：
 
@@ -166,6 +167,22 @@ bash scripts/install_links.sh
 - `~/.opencode/skills`
 - `~/.workbuddy/skills`
 - `~/.codebuddy/skills`
+
+安装后，任意 agent 在任意目录都能识别并调用本 skill。外部 agent 推荐通过环境变量定位 CLI，并用 `--output` 把结果直接落到当前工作目录：
+
+```bash
+# 定位 CLI（可移植，推荐）
+export JIMENG_CLI_DIR="/path/to/jimeng-cli-free"
+
+# 在任意目录生图，结果直接落到当前目录
+bash "$JIMENG_CLI_DIR/bin/jimeng-cli-free" generate "你的提示词" --aspect 16:9 --output "$(pwd)"
+
+# 不加 --output 时，结果默认落到 <仓库>/output/<时间戳>/0001.png
+```
+
+- `generate` 的 `<提示词>` 必须是命令后第一个非 `--` 的参数。
+- 默认模型 `high_aes_general_v47`、比例 `9:16`、格式 `png`、每次 1 张图（均可在 `config.json` 改）。
+- 完整命令、参数表、退出码见 `bash bin/jimeng-cli-free help`，对外使用说明见 [`SKILL.md`](./SKILL.md)。
 
 ## 🖼️ Demo
 
@@ -227,6 +244,7 @@ bash scripts/install_links.sh
 - 如果不确定插件目录，优先检查 `downloads/opencli-extension/unpacked`
 - 如果页面卡住或没返回结果，先检查浏览器窗口里即梦页面是否仍处于可操作状态
 - 如果输出目录没有新图片，先看 `result.stderr.log` 和 `result.json`
+- 如果用了 `--output <目录>` 失败，确认目标路径可写、父目录存在；脚本会尝试 `mkdir -p`，权限不足会以退出码 `1` 退出
 
 ## ⚖️ 许可证与致谢
 

@@ -17,8 +17,8 @@ cli({
     {
       name: 'model',
       type: 'string',
-      default: 'high_aes_general_v50',
-      help: '模型: high_aes_general_v50 (5.0 Lite), high_aes_general_v42 (4.6), high_aes_general_v45 (4.5), high_aes_general_v41 (4.1), high_aes_general_v40 (4.0)',
+      default: 'high_aes_general_v47',
+      help: '模型: high_aes_general_v47 (4.7), high_aes_general_v50 (5.0 Lite), high_aes_general_v42 (4.6), high_aes_general_v45 (4.5), high_aes_general_v41 (4.1), high_aes_general_v40 (4.0)',
     },
     {
       name: 'aspect',
@@ -33,6 +33,7 @@ cli({
       help: '工作区 ID；默认使用 workspace=0',
     },
     { name: 'wait', type: 'int', default: 40, help: '等待生成完成的秒数' },
+    { name: 'generate_count', type: 'int', default: 1, help: '每次生成图片数量，默认 1' },
     { name: 'mode', type: 'string', default: 'edit', help: '编辑模式，默认 edit；若页面未命中编辑入口会回退到 reference' },
   ],
   columns: ['status', 'prompt', 'image_count', 'image_urls', 'mode', 'reference_file'],

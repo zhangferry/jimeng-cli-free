@@ -126,5 +126,5 @@ PY
 }
 
 log() {
-  printf '[jimeng-cli-free] %s\n' "$*"
+  printf '[jimeng-cli-free] %s\n' "$*" >&2
 }

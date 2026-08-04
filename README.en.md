@@ -35,7 +35,7 @@ It supports model selection, aspect ratio control, stable browser automation, re
   - `3:4`
   - `2:3`
   - `9:16`
-- 📥 Downloads all 4 generated images into the local `output/` folder
+- 📥 Generates and downloads one image by default into the local `output/` folder
 - 🖼️ Supports uploading reference images from:
   - local image files
   - image URLs

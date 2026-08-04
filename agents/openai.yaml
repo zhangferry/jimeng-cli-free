@@ -1,7 +1,7 @@
 interface:
   display_name: "jimeng-cli-free"
-  short_description: "稳定驱动即梦网页端生图，支持参考图上传、模型比例控制，并下载 4 张结果图到本地"
-  default_prompt: "Use $jimeng-cli-free to prepare the skill-managed runtime, verify the browser extension and Dreamina login, generate Dreamina images with model and aspect controls, support reference-image upload from local file, URL, or clipboard, recommend Image 5.0 Lite / 4.6 / 4.5 for reference-image workflows, and download all 4 results locally."
+  short_description: "稳定驱动即梦网页端生图，默认只生成 1 张，支持参考图上传与模型比例控制"
+  default_prompt: "Use $jimeng-cli-free to prepare the skill-managed runtime, verify the browser extension and Dreamina login, generate exactly one Dreamina image by default with model and aspect controls, support reference-image upload from local file, URL, or clipboard, recommend Image 5.0 Lite / 4.6 / 4.5 for reference-image workflows, and download the single result locally."
 
 policy:
   allow_implicit_invocation: true

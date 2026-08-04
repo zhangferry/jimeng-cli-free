@@ -16,11 +16,13 @@ MODEL=""
 ASPECT=""
 WORKSPACE=""
 OUTPUT_FORMAT=""
+OUTPUT_BASE=""
 REFERENCE=""
 REFERENCE_URL=""
 USE_CLIPBOARD="false"
 MODE=""
 WORKSPACE_EXPLICIT="false"
+GENERATE_COUNT=""
 
 mkdir -p "$TMP_DIR"
 
@@ -244,10 +246,12 @@ while [[ $# -gt 0 ]]; do
     --aspect) ASPECT="${2:-}"; shift 2 ;;
     --workspace) WORKSPACE="${2:-}"; WORKSPACE_EXPLICIT="true"; shift 2 ;;
     --format) OUTPUT_FORMAT="${2:-}"; shift 2 ;;
+    --output) OUTPUT_BASE="${2:-}"; shift 2 ;;
     --reference|--image) REFERENCE="${2:-}"; shift 2 ;;
     --reference-url|--image-url) REFERENCE_URL="${2:-}"; shift 2 ;;
     --clipboard) USE_CLIPBOARD="true"; shift ;;
     --mode) MODE="${2:-}"; shift 2 ;;
+    --generate-count) GENERATE_COUNT="${2:-}"; shift 2 ;;
     *)
       echo "未知参数：$1" >&2
       exit 1
@@ -278,16 +282,29 @@ OUTPUT_FORMAT="${OUTPUT_FORMAT:-$(config_get default_output_format)}"
 WAIT_SECONDS="$(config_get generate_wait_seconds)"
 MAX_ATTEMPTS="$(config_get max_generate_attempts)"
 MODE="${MODE:-text}"
+GENERATE_COUNT="${GENERATE_COUNT:-$(config_get default_generate_count)}"
+GENERATE_COUNT="${GENERATE_COUNT:-1}"
 REFERENCE="$(prepare_reference_file "$REFERENCE" "$REFERENCE_URL" "$USE_CLIPBOARD")"
 assert_reference_is_image "$REFERENCE"
+
+if ! [[ "$GENERATE_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+  echo "--generate-count 必须是大于 0 的整数" >&2
+  exit 1
+fi
 
 case "$OUTPUT_FORMAT" in
   png|jpg|jpeg|webp) ;;
   *)
-    echo "不支持的输出格式：$OUTPUT_FORMAT，支持 png/jpg/webp" >&2
+    echo "不支持的输出格式：${OUTPUT_FORMAT}，支持 png/jpg/webp" >&2
     exit 1
     ;;
 esac
+
+# --output 指定本次结果输出根目录；未传则回退到默认 output/
+OUTPUT_BASE="${OUTPUT_BASE:-$OUTPUT_DIR}"
+if [[ ! -d "$OUTPUT_BASE" ]]; then
+  mkdir -p "$OUTPUT_BASE" || { echo "无法创建输出目录：$OUTPUT_BASE" >&2; exit 1; }
+fi
 
 bash "$SCRIPT_DIR/ensure_opencli_and_jimeng.sh"
 bash "$SCRIPT_DIR/sync_fork_patch.sh"
@@ -300,14 +317,14 @@ run_dir=""
 
 while [[ "$attempt" -le "$MAX_ATTEMPTS" ]]; do
   ts="$(date +%Y%m%d-%H%M%S)"
-  run_dir="$OUTPUT_DIR/$ts"
+  run_dir="$OUTPUT_BASE/$ts"
   mkdir -p "$run_dir"
   printf '%s\n' "$PROMPT" > "$run_dir/prompt.txt"
 
   log "第 $attempt 次调用 skill 私有 runtime 的 opencli jimeng generate"
   json_path="$run_dir/result.json"
   err_path="$run_dir/result.stderr.log"
-  cmd=(jimeng generate "$PROMPT" --model "$MODEL" --aspect "$ASPECT" --workspace "$WORKSPACE" --wait "$WAIT_SECONDS" --mode "$MODE" -f json)
+  cmd=(jimeng generate "$PROMPT" --model "$MODEL" --aspect "$ASPECT" --workspace "$WORKSPACE" --wait "$WAIT_SECONDS" --generate_count "$GENERATE_COUNT" --mode "$MODE" -f json)
   if [[ -n "$REFERENCE" ]]; then
     cmd+=(--reference "$REFERENCE")
   fi
@@ -343,9 +360,9 @@ PY
   done < <(printf '%s\n' "$read_status_and_urls" | sed -n '2,$p')
 
   if [[ "$status" == "success" || "$status" == "pending" ]]; then
-    if [[ "${#urls[@]}" -ge 4 ]]; then
+    if [[ "${#urls[@]}" -ge 1 ]]; then
       idx=1
-      for url in "${urls[@]:0:4}"; do
+      for url in "${urls[@]:0:1}"; do
         webp_name="$(printf '%04d.webp' "$idx")"
         webp_path="$run_dir/$webp_name"
         curl -L --fail --silent --show-error "$url" -o "$webp_path"

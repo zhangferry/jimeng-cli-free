@@ -9,7 +9,7 @@ usage() {
 用法：
   bash bin/jimeng-cli-free ensure
   bash bin/jimeng-cli-free runtime-version
-  bash bin/jimeng-cli-free generate "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID] [--reference IMAGE|URL|clipboard] [--reference-url URL] [--clipboard] [--mode MODE]
+  bash bin/jimeng-cli-free generate "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID] [--generate-count N] [--reference IMAGE|URL|clipboard] [--reference-url URL] [--clipboard] [--mode MODE]
   bash bin/jimeng-cli-free edit "<image>" "<prompt>" [--model MODEL] [--aspect RATIO] [--format FORMAT] [--workspace ID]
 
 兼容旧入口：

@@ -11,3 +11,5 @@ tmp/
 info.json
 .workspace-cache.json
 .omc/
+.omx/
+reply.md
