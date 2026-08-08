@@ -1,6 +1,20 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { ArgumentError, AuthRequiredError, CommandExecutionError } from '@jackwener/opencli/errors';
+import {
+  ASPECT_RATIO_TYPE_MAP,
+  matchesAspectDimensions,
+  validateNativeImageArgs,
+} from './aspect.js';
+import {
+  applyNativeImageSettings,
+  captureWebpackRuntime,
+  inspectReactRuntime,
+  isGenerationRecord,
+  isNewGenerationRecord,
+  JIMENG_WEBPACK_MODULE_IDS,
+  resolveOriginalImageUrls,
+} from './runtime.js';
 
 export const JIMENG_DOMAIN = 'jimeng.jianying.com';
 export const JIMENG_GENERATE_URL = 'https://jimeng.jianying.com/ai-tool/home/';
@@ -110,6 +124,12 @@ async function prepareComposer(page, { prompt, aspect, model }) {
         const aspect = ${JSON.stringify(aspect)};
         const modelArg = ${JSON.stringify(model)};
         const modelMap = ${JSON.stringify(MODEL_MAP)};
+        const ratioTypes = ${JSON.stringify(ASPECT_RATIO_TYPE_MAP)};
+        const runtimeModules = ${JSON.stringify(JIMENG_WEBPACK_MODULE_IDS)};
+        const applyImageSettings = ${applyNativeImageSettings.toString()};
+        const captureRuntime = ${captureWebpackRuntime.toString()};
+        const inspectRuntime = ${inspectReactRuntime.toString()};
+        const validateImageArgs = ${validateNativeImageArgs.toString()};
         const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         const normalize = (s) => (s || '').replace(/\\s+/g, ' ').trim();
         const isVisible = (el) => {
@@ -165,7 +185,11 @@ async function prepareComposer(page, { prompt, aspect, model }) {
           // 旧版即梦：查找 contenteditable 编辑器
           const editors = visible(Array.from(document.querySelectorAll('[contenteditable="true"][role="textbox"], [contenteditable="true"]')));
           const editor = editors
-            .sort((a, b) => b.getBoundingClientRect().y - a.getBoundingClientRect().y)
+            .sort((a, b) => {
+              const aRect = a.getBoundingClientRect();
+              const bRect = b.getBoundingClientRect();
+              return bRect.width * bRect.height - aRect.width * aRect.height;
+            })
             .find((el) => {
               const text = normalize(el.textContent);
               return !text || /上传参考图|输入文字|主体|描述你想生成/.test(text) || el.getBoundingClientRect().y > window.innerHeight / 2;
@@ -200,33 +224,53 @@ async function prepareComposer(page, { prompt, aspect, model }) {
           }
         }
 
-        // 比例选择：找不到就跳过
-        if (aspect) {
-          const aspectButton = visible(Array.from(document.querySelectorAll('button'))).find((el) => {
-            const text = normalize(el.textContent);
-            return /^(智能|21:9|16:9|3:2|4:3|1:1|3:4|2:3|9:16)/.test(text);
-          });
-          if (aspectButton instanceof HTMLElement) {
-            aspectButton.click();
-            await sleep(500);
-            const ratioInput = Array.from(document.querySelectorAll('input[type="radio"]')).find((el) => {
-              const value = el.getAttribute('value') || '';
-              if (aspect === 'smart') return value === '';
-              return value === aspect;
-            });
-            const ratioTarget = ratioInput?.closest('label') || ratioInput;
-            if (ratioTarget instanceof HTMLElement) {
-              ratioTarget.click();
-              await sleep(400);
+        // 新版即梦由应用状态管理器构造最终 generateArgs。直接调用同一管理器，
+        // 避免隐藏 radio、重复编辑器和 AB 实验布局只改变表面 UI 状态。
+        const runtimeRequire = captureRuntime(self.__LOADABLE_LOADED_CHUNKS__, 'native-settings');
+        if (!runtimeRequire) return { ok: false, reason: 'webpack-runtime-not-found' };
+
+        let contentGeneratorToken = null;
+        try {
+          contentGeneratorToken = runtimeRequire(runtimeModules.contentGeneratorToken).V;
+        } catch {}
+        if (!contentGeneratorToken) return { ok: false, reason: 'content-generator-token-not-found' };
+
+        const { serviceCandidates } = inspectRuntime(document, { fiberDepth: 250, objectDepth: 0 });
+
+        let contentGenerator = null;
+        for (const service of serviceCandidates) {
+          try {
+            const candidate = service.invokeFunction((accessor) => accessor.get(contentGeneratorToken));
+            if (candidate?.agenticGeneratorManager) {
+              contentGenerator = candidate;
+              break;
             }
-          }
+          } catch {}
+        }
+        if (!contentGenerator) return { ok: false, reason: 'content-generator-service-not-found' };
+
+        const { generateArgs, valid } = applyImageSettings(contentGenerator.agenticGeneratorManager, {
+          aspect,
+          model: modelArg,
+          ratioTypes,
+          validateImageArgs,
+        });
+        if (!valid) {
+          return {
+            ok: false,
+            reason: aspect === 'smart'
+              ? 'native-smart-ratio-not-applied'
+              : 'native-aspect-ratio-not-applied',
+            aspect,
+            generateArgs,
+          };
         }
 
         return { ok: true };
       })()`);
 
       if (!result?.ok) {
-        throw new CommandExecutionError('即梦输入区初始化失败', result?.reason || 'unknown');
+        throw new CommandExecutionError('即梦输入区初始化失败', JSON.stringify(result || { reason: 'unknown' }));
       }
       return;
     } catch (err) {
@@ -361,7 +405,27 @@ async function clickGenerate(page) {
       return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
     };
     const buttons = Array.from(document.querySelectorAll('button')).filter((el) => isVisible(el));
-    const byLabel = buttons.find((el) => /生成|立即生成|开始生成/.test(normalize(el.textContent)));
+    const editors = Array.from(document.querySelectorAll('textarea,[contenteditable="true"][role="textbox"],[contenteditable="true"]'))
+      .filter((el) => isVisible(el))
+      .sort((a, b) => {
+        const aRect = a.getBoundingClientRect();
+        const bRect = b.getBoundingClientRect();
+        return bRect.width * bRect.height - aRect.width * aRect.height;
+      });
+    for (const editor of editors) {
+      let container = editor;
+      for (let depth = 0; depth < 8 && container; depth += 1) {
+        container = container.parentElement;
+        if (!(container instanceof HTMLElement)) break;
+        const submitButton = Array.from(container.querySelectorAll('button[class*="submit-button-"]'))
+          .find((el) => isVisible(el) && !el.disabled);
+        if (submitButton instanceof HTMLElement) {
+          submitButton.click();
+          return { ok: true };
+        }
+      }
+    }
+    const byLabel = buttons.find((el) => /^(生成|立即生成|开始生成)$/.test(normalize(el.textContent)));
     if (byLabel instanceof HTMLElement) {
       byLabel.click();
       return { ok: true };
@@ -375,9 +439,7 @@ async function clickGenerate(page) {
       return { ok: true };
     }
     // 新版即梦 UI：在 prompt 编辑器附近查找图标按钮（提交/生成按钮）
-    const editor = Array.from(document.querySelectorAll('[contenteditable="true"][role="textbox"], [contenteditable="true"]'))
-      .filter((el) => isVisible(el))
-      .sort((a, b) => b.getBoundingClientRect().y - a.getBoundingClientRect().y)[0] || null;
+    const editor = editors[0] || null;
     if (editor) {
       const editorRect = editor.getBoundingClientRect();
       const excludeTexts = ['自动', '搜索', '我的发布', '取消', '确定', '保存', '上传', '下载'];
@@ -416,158 +478,122 @@ async function clickGenerate(page) {
   }
 }
 
-async function collectGenerationResult(page, { prompt, aspect, model, waitSeconds, mode, referencePath }) {
-  const inspectResult = async () => page.evaluate(`(() => {
+async function snapshotGenerationRecordKeys(page) {
+  return page.evaluate(`(() => {
+    const inspectRuntime = ${inspectReactRuntime.toString()};
+    const isGenerationRecord = ${isGenerationRecord.toString()};
+    const workspaceId = Number(new URL(location.href).searchParams.get('workspace'));
+    if (!workspaceId) return [];
+    const { records } = inspectRuntime(document, {
+      fiberDepth: 25,
+      objectDepth: 8,
+      maxVisited: 50000,
+      recordFilter: (value) => isGenerationRecord(value, workspaceId),
+    });
+    return records.map((record) => record.uniqueKey).filter(Boolean);
+  })()`);
+}
+
+async function collectGenerationResult(page, {
+  prompt,
+  aspect,
+  waitSeconds,
+  mode,
+  referencePath,
+  startedAt,
+  existingRecordKeys,
+}) {
+  const inspectResult = async () => page.evaluate(`(async () => {
     const prompt = ${JSON.stringify(prompt)};
     const aspect = ${JSON.stringify(aspect)};
-    const modelArg = ${JSON.stringify(model)};
-    const modelMap = ${JSON.stringify(MODEL_MAP)};
-    const normalize = (s) => (s || '').replace(/\\s+/g, ' ').trim();
-    const isVisible = (el) => {
-      if (!(el instanceof HTMLElement)) return false;
-      const rect = el.getBoundingClientRect();
-      const style = window.getComputedStyle(el);
-      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-    };
-    const visible = (items) => items.filter((el) => isVisible(el));
-    const scoreImageUrl = (url, p = '') => {
-      if (!url || !url.includes('dreamina-sign.byteimg.com')) return -1;
-      let score = 0;
-      // aigc_resize:0:0 是原图大图，给最高分（修复 4.7 抓成 100x100 缩略图的 bug）
-      if (url.includes('aigc_resize:0:0') || url.includes('aigc_resize%3A0%3A0')) {
-        score += 10000;
-      } else {
-        const aigcMatch = url.match(/aigc_resize:(\\d+):(\\d+)/);
-        if (aigcMatch) {
-          // aigc_resize:W:H（W,H>0）是大图，按尺寸加分
-          score += Math.max(Number(aigcMatch[1]), Number(aigcMatch[2]));
-        } else if (url.includes('resize:') || url.includes('resize%3A')) {
-          // resize:W:H（不带 aigc_ 前缀）是缩略图，扣分
-          score -= 5000;
-        }
-      }
-      const pathRes = p.match(/resolutionUrlMap\\.(\\d+)/);
-      if (pathRes) {
-        score += Number(pathRes[1]) + 5000;
-      }
-      if (p.includes('resolutionUrlMap')) score += 1000;
-      if (p.endsWith('.url') || p.includes('.url')) score += 200;
-      if (url.includes('format=.jpeg')) score -= 10;
-      return score;
-    };
-    const collectObjectUrls = (root) => {
-      const seen = new WeakSet();
-      const found = [];
-      const visit = (value, p, depth) => {
-        if (!value || depth > 8) return;
-        if (typeof value === 'string') {
-          const score = scoreImageUrl(value, p);
-          if (score >= 0) found.push({ url: value, score, path: p });
-          return;
-        }
-        if (typeof value !== 'object' || seen.has(value)) return;
-        seen.add(value);
-        for (const key of Object.keys(value)) {
-          let next;
-          try {
-            next = value[key];
-          } catch {
-            continue;
-          }
-          visit(next, p ? \`\${p}.\${key}\` : key, depth + 1);
-        }
-      };
-      visit(root, '', 0);
-      return found;
-    };
-    const extractBestImageUrl = (img) => {
-      const candidates = [];
-      const push = (url, p = '') => {
-        const score = scoreImageUrl(url, p);
-        if (score >= 0) candidates.push({ url, score, path: p });
-      };
+    const startedAt = ${JSON.stringify(startedAt)};
+    const existingRecordKeys = new Set(${JSON.stringify(existingRecordKeys)});
+    const runtimeModules = ${JSON.stringify(JIMENG_WEBPACK_MODULE_IDS)};
+    const captureRuntime = ${captureWebpackRuntime.toString()};
+    const inspectRuntime = ${inspectReactRuntime.toString()};
+    const isGenerationRecord = ${isGenerationRecord.toString()};
+    const matchesNewGenerationRecord = ${isNewGenerationRecord.toString()};
+    const resolveOriginalUrls = ${resolveOriginalImageUrls.toString()};
+    const dimensionsMatchAspect = ${matchesAspectDimensions.toString()};
+    const workspaceId = Number(new URL(location.href).searchParams.get('workspace'));
+    if (!workspaceId) return null;
 
-      push(img.getAttribute('src') || '', 'img.src');
-      push(img.currentSrc || '', 'img.currentSrc');
+    const { records, serviceCandidates } = inspectRuntime(document, {
+      fiberDepth: 25,
+      objectDepth: 8,
+      maxVisited: 50000,
+      recordFilter: (value) => matchesNewGenerationRecord(value, {
+        workspaceId,
+        startedAt,
+        existingRecordKeys,
+      }),
+    });
 
-      let current = img;
-      for (let depth = 0; depth < 5 && current; depth += 1) {
-        const reactProps = Object.getOwnPropertyNames(current)
-          .filter((name) => name.startsWith('__reactProps') || name.startsWith('__reactFiber'));
-        for (const propName of reactProps) {
-          try {
-            for (const item of collectObjectUrls(current[propName])) {
-              candidates.push(item);
-            }
-          } catch {
-          }
-        }
-        current = current.parentElement;
+    const completed = records
+      .filter((record) => record.state === 2
+        && record.statusCode === 50
+        && record.isGenerating === false
+        && record.items.length > 0)
+      .sort((a, b) => Number(a.generateTimeInfo?.createdTime || 0)
+        - Number(b.generateTimeInfo?.createdTime || 0));
+    const latest = completed.at(-1);
+    if (!latest) return null;
+
+    const turnRecords = completed.filter((record) => record.turnId === latest.turnId);
+    const imageItems = turnRecords.flatMap((record) => record.items
+      .filter((item) => item?.imageUri)
+      .map((item) => ({
+        imageUri: item.imageUri,
+        rawWidth: Number(item.rawWidth || 0),
+        rawHeight: Number(item.rawHeight || 0),
+      })));
+    if (imageItems.length === 0) return null;
+
+    if (aspect !== 'smart') {
+      const recordRatioMatches = turnRecords.every((record) =>
+        record.imageRatioText === aspect && record.isIntelligentAspectRatio === false);
+      const dimensionsMatch = imageItems.every((item) =>
+        dimensionsMatchAspect(aspect, item.rawWidth, item.rawHeight));
+      if (!recordRatioMatches || !dimensionsMatch) {
+        return {
+          status: 'invalid-ratio',
+          actualRatios: turnRecords.map((record) => record.imageRatioText),
+          dimensions: imageItems.map((item) => String(item.rawWidth) + 'x' + String(item.rawHeight)),
+        };
       }
-
-      const dedup = new Map();
-      for (const item of candidates) {
-        const existing = dedup.get(item.url);
-        if (!existing || item.score > existing.score) {
-          dedup.set(item.url, item);
-        }
-      }
-      return Array.from(dedup.values()).sort((a, b) => b.score - a.score)[0]?.url || '';
-    };
-
-    const modelLabel = modelMap[modelArg] || modelArg;
-    const extractCard = () => {
-      const target = normalize(prompt);
-      const nodes = visible(Array.from(document.querySelectorAll('span, p, div')))
-        .filter((el) => normalize(el.textContent) === target);
-      const candidates = [];
-      for (const node of nodes) {
-        let current = node;
-        for (let depth = 0; depth < 8 && current; depth += 1) {
-          current = current.parentElement;
-          if (!(current instanceof HTMLElement)) continue;
-          const text = normalize(current.textContent);
-          if (!text.includes(target)) continue;
-          const urls = Array.from(current.querySelectorAll('img'))
-            .map((img) => extractBestImageUrl(img))
-            .filter((src) => src.includes('dreamina-sign.byteimg.com'));
-          const hasProgress = /造梦中|生成中/.test(text);
-          const hasResultActions = /重新编辑|再次生成|再次创作/.test(text);
-          const hasModel = text.includes(modelLabel);
-          const hasAspect = aspect ? text.includes(aspect) : false;
-          const isReferenceCard = /已找到\\d+张|灵感参考/.test(text);
-          const rect = current.getBoundingClientRect();
-          const recencyScore = Math.round(Math.max(rect.y, 0));
-          const score = (hasModel ? 3000 : 0)
-            + (hasAspect ? 800 : 0)
-            + (hasResultActions ? 500 : 0)
-            + (hasProgress ? 300 : 0)
-            + (urls.length > 0 ? 400 : 0)
-            + recencyScore
-            - text.length;
-          if (urls.length > 0 || hasProgress || hasResultActions) {
-            if (!isReferenceCard || hasModel || hasProgress || hasResultActions) {
-              candidates.push({ urls, text, hasProgress, hasResultActions, score });
-            }
-          }
-        }
-      }
-      candidates.sort((a, b) => b.score - a.score);
-      return candidates[0] || null;
-    };
-
-    const matchedCard = extractCard();
-    if (!matchedCard) {
-      return null;
     }
 
-    const urls = Array.from(new Set(matchedCard.urls)).slice(0, 1);
-    const finalStatus = urls.length > 0 && !matchedCard.hasProgress ? 'success' : 'pending';
+    const webpack = captureRuntime(self.__LOADABLE_LOADED_CHUNKS__, 'original-image');
+    if (!webpack) return { status: 'pending', reason: 'webpack-runtime-not-found' };
+
+    let materialToken = null;
+    try {
+      materialToken = webpack(runtimeModules.materialDataToken).H;
+    } catch {}
+    if (!materialToken) return { status: 'pending', reason: 'material-service-token-not-found' };
+
+    let materialService = null;
+    for (const service of serviceCandidates) {
+      try {
+        const candidate = service.invokeFunction((accessor) => accessor.get(materialToken));
+        if (typeof candidate?.getUrlByUris === 'function') {
+          materialService = candidate;
+          break;
+        }
+      } catch {}
+    }
+    if (!materialService) return { status: 'pending', reason: 'material-service-not-found' };
+
+    const imageUris = Array.from(new Set(imageItems.map((item) => item.imageUri)));
+    const originalResult = await resolveOriginalUrls(materialService, imageUris);
+    if (!originalResult.ok) return { status: 'pending', reason: originalResult.reason };
+    const originalUrls = originalResult.urls;
+
     return {
-      status: finalStatus,
+      status: 'success',
       prompt: prompt.substring(0, 120),
-      image_count: urls.length,
-      image_urls: urls.join('\\n'),
+      image_count: originalUrls.length,
+      image_urls: originalUrls.join('\\n'),
     };
   })()`);
 
@@ -576,23 +602,32 @@ async function collectGenerationResult(page, { prompt, aspect, model, waitSecond
   for (let attempt = 0; attempt < waitSeconds; attempt += 1) {
     try {
       const result = await inspectResult();
+      if (result?.status === 'invalid-ratio') {
+        throw new CommandExecutionError(
+          `即梦返回的原始图片比例不是 ${aspect}`,
+          JSON.stringify(result),
+        );
+      }
       if (result) {
         lastResult = result;
         if (result.status === 'success') break;
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof CommandExecutionError) throw error;
       // Completed generations can re-render the page and detach CDP. The next
       // short poll lets Page.evaluate reattach to the current document.
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
-  const row = lastResult || {
-    status: 'timeout',
-    prompt: prompt.substring(0, 120),
-    image_count: 0,
-    image_urls: 'No matching history item found',
-  };
+  const row = lastResult?.status === 'success'
+    ? lastResult
+    : {
+        status: 'timeout',
+        prompt: prompt.substring(0, 120),
+        image_count: 0,
+        image_urls: lastResult?.reason || 'No matching completed generation found',
+      };
   return [{
     ...row,
     mode,
@@ -693,14 +728,17 @@ export function buildJimengGenerateFunc(options = {}) {
     }
 
     await injectGenerateCountInterceptor(page, generateCount);
+    const existingRecordKeys = await snapshotGenerationRecordKeys(page);
+    const startedAt = Date.now();
     await clickGenerate(page);
     return collectGenerationResult(page, {
       prompt,
       aspect,
-      model,
       waitSeconds,
       mode: appliedMode,
       referencePath,
+      startedAt,
+      existingRecordKeys,
     });
   };
 }
