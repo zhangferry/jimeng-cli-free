@@ -128,3 +128,10 @@ PY
 log() {
   printf '[jimeng-cli-free] %s\n' "$*" >&2
 }
+
+sips_format_for_output() {
+  case "$1" in
+    jpg) printf 'jpeg\n' ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
