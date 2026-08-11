@@ -373,7 +373,8 @@ PY
           [[ "$ext" == "jpeg" ]] && ext="jpg"
           out_name="$(printf '%04d.%s' "$idx" "$ext")"
           out_path="$run_dir/$out_name"
-          sips -s format "$OUTPUT_FORMAT" "$webp_path" --out "$out_path" >/dev/null
+          sips_format="$(sips_format_for_output "$OUTPUT_FORMAT")"
+          sips -s format "$sips_format" "$webp_path" --out "$out_path" >/dev/null
           rm -f "$webp_path"
         fi
         idx=$((idx + 1))
