@@ -130,7 +130,52 @@ test('resolves imageUri values through the original-image service', async () => 
 
 test('keeps webpack module ids behind semantic names', () => {
   assert.deepEqual({ ...runtime.JIMENG_WEBPACK_MODULE_IDS }, {
-    contentGeneratorToken: 610711,
-    materialDataToken: 254094,
+    contentGeneratorToken: 72203,
+    materialDataToken: 298706,
   });
+});
+
+test('resolves service tokens by semantic name when webpack module ids drift', () => {
+  const contentToken = function ContentGeneratorToken() {};
+  Object.defineProperty(contentToken, 'toString', {
+    value: () => 'content-generator-feature-service',
+  });
+  const materialToken = function MaterialDataToken() {};
+  Object.defineProperty(materialToken, 'toString', {
+    value: () => 'dreamina-material-data-service',
+  });
+
+  const factories = {
+    72203(module) {
+      const semanticMarker = 'content-generator-feature-service';
+      module.exports = { V: contentToken, semanticMarker };
+    },
+    298706(module) {
+      const semanticMarker = 'dreamina-material-data-service';
+      module.exports = { H: materialToken, semanticMarker };
+    },
+  };
+  const cache = {};
+  const webpack = (id) => {
+    if (!factories[id]) throw new Error(`missing module ${id}`);
+    if (!cache[id]) {
+      const module = { exports: {} };
+      factories[id](module, module.exports, webpack);
+      cache[id] = module;
+    }
+    return cache[id].exports;
+  };
+  webpack.m = factories;
+  webpack.c = cache;
+
+  assert.equal(runtime.resolveWebpackToken(webpack, {
+    preferredModuleId: 610711,
+    preferredExportName: 'V',
+    semanticName: 'content-generator-feature-service',
+  }), contentToken);
+  assert.equal(runtime.resolveWebpackToken(webpack, {
+    preferredModuleId: 254094,
+    preferredExportName: 'H',
+    semanticName: 'dreamina-material-data-service',
+  }), materialToken);
 });

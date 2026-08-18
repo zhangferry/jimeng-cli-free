@@ -1,6 +1,19 @@
 export const JIMENG_WEBPACK_MODULE_IDS = Object.freeze({
-  contentGeneratorToken: 610711,
-  materialDataToken: 254094,
+  contentGeneratorToken: 72203,
+  materialDataToken: 298706,
+});
+
+export const JIMENG_WEBPACK_TOKEN_SPECS = Object.freeze({
+  contentGeneratorToken: Object.freeze({
+    preferredModuleId: JIMENG_WEBPACK_MODULE_IDS.contentGeneratorToken,
+    preferredExportName: 'V',
+    semanticName: 'content-generator-feature-service',
+  }),
+  materialDataToken: Object.freeze({
+    preferredModuleId: JIMENG_WEBPACK_MODULE_IDS.materialDataToken,
+    preferredExportName: 'H',
+    semanticName: 'dreamina-material-data-service',
+  }),
 });
 
 export function captureWebpackRuntime(loadableChunks, label) {
@@ -14,6 +27,60 @@ export function captureWebpackRuntime(loadableChunks, label) {
     ]);
   } catch {}
   return runtimeRequire;
+}
+
+export function resolveWebpackToken(runtimeRequire, {
+  preferredModuleId,
+  preferredExportName,
+  semanticName,
+}) {
+  if (typeof runtimeRequire !== 'function' || !semanticName) return null;
+
+  const matchesSemanticName = (value) => {
+    if (value == null || typeof value === 'string') return false;
+    try {
+      return String(value) === semanticName;
+    } catch {
+      return false;
+    }
+  };
+  const findTokenInExports = (moduleExports) => {
+    if (!moduleExports) return null;
+    if (preferredExportName && matchesSemanticName(moduleExports[preferredExportName])) {
+      return moduleExports[preferredExportName];
+    }
+    for (const value of Object.values(moduleExports)) {
+      if (matchesSemanticName(value)) return value;
+    }
+    return null;
+  };
+  const loadAndInspect = (moduleId) => {
+    try {
+      return findTokenInExports(runtimeRequire(moduleId));
+    } catch {
+      return null;
+    }
+  };
+
+  const preferred = loadAndInspect(preferredModuleId);
+  if (preferred) return preferred;
+
+  for (const cachedModule of Object.values(runtimeRequire.c || {})) {
+    const cached = findTokenInExports(cachedModule?.exports);
+    if (cached) return cached;
+  }
+
+  for (const [moduleId, factory] of Object.entries(runtimeRequire.m || {})) {
+    let source = '';
+    try {
+      source = Function.prototype.toString.call(factory);
+    } catch {}
+    if (!source.includes(semanticName)) continue;
+    const discovered = loadAndInspect(moduleId);
+    if (discovered) return discovered;
+  }
+
+  return null;
 }
 
 export function isGenerationRecord(value, workspaceId) {
