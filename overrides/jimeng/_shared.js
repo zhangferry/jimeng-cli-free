@@ -12,7 +12,8 @@ import {
   inspectReactRuntime,
   isGenerationRecord,
   isNewGenerationRecord,
-  JIMENG_WEBPACK_MODULE_IDS,
+  JIMENG_WEBPACK_TOKEN_SPECS,
+  resolveWebpackToken,
   resolveOriginalImageUrls,
 } from './runtime.js';
 
@@ -125,10 +126,11 @@ async function prepareComposer(page, { prompt, aspect, model }) {
         const modelArg = ${JSON.stringify(model)};
         const modelMap = ${JSON.stringify(MODEL_MAP)};
         const ratioTypes = ${JSON.stringify(ASPECT_RATIO_TYPE_MAP)};
-        const runtimeModules = ${JSON.stringify(JIMENG_WEBPACK_MODULE_IDS)};
+        const runtimeTokenSpecs = ${JSON.stringify(JIMENG_WEBPACK_TOKEN_SPECS)};
         const applyImageSettings = ${applyNativeImageSettings.toString()};
         const captureRuntime = ${captureWebpackRuntime.toString()};
         const inspectRuntime = ${inspectReactRuntime.toString()};
+        const resolveRuntimeToken = ${resolveWebpackToken.toString()};
         const validateImageArgs = ${validateNativeImageArgs.toString()};
         const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         const normalize = (s) => (s || '').replace(/\\s+/g, ' ').trim();
@@ -229,10 +231,10 @@ async function prepareComposer(page, { prompt, aspect, model }) {
         const runtimeRequire = captureRuntime(self.__LOADABLE_LOADED_CHUNKS__, 'native-settings');
         if (!runtimeRequire) return { ok: false, reason: 'webpack-runtime-not-found' };
 
-        let contentGeneratorToken = null;
-        try {
-          contentGeneratorToken = runtimeRequire(runtimeModules.contentGeneratorToken).V;
-        } catch {}
+        const contentGeneratorToken = resolveRuntimeToken(
+          runtimeRequire,
+          runtimeTokenSpecs.contentGeneratorToken,
+        );
         if (!contentGeneratorToken) return { ok: false, reason: 'content-generator-token-not-found' };
 
         const { serviceCandidates } = inspectRuntime(document, { fiberDepth: 250, objectDepth: 0 });
@@ -508,11 +510,12 @@ async function collectGenerationResult(page, {
     const aspect = ${JSON.stringify(aspect)};
     const startedAt = ${JSON.stringify(startedAt)};
     const existingRecordKeys = new Set(${JSON.stringify(existingRecordKeys)});
-    const runtimeModules = ${JSON.stringify(JIMENG_WEBPACK_MODULE_IDS)};
+    const runtimeTokenSpecs = ${JSON.stringify(JIMENG_WEBPACK_TOKEN_SPECS)};
     const captureRuntime = ${captureWebpackRuntime.toString()};
     const inspectRuntime = ${inspectReactRuntime.toString()};
     const isGenerationRecord = ${isGenerationRecord.toString()};
     const matchesNewGenerationRecord = ${isNewGenerationRecord.toString()};
+    const resolveRuntimeToken = ${resolveWebpackToken.toString()};
     const resolveOriginalUrls = ${resolveOriginalImageUrls.toString()};
     const dimensionsMatchAspect = ${matchesAspectDimensions.toString()};
     const workspaceId = Number(new URL(location.href).searchParams.get('workspace'));
@@ -566,10 +569,10 @@ async function collectGenerationResult(page, {
     const webpack = captureRuntime(self.__LOADABLE_LOADED_CHUNKS__, 'original-image');
     if (!webpack) return { status: 'pending', reason: 'webpack-runtime-not-found' };
 
-    let materialToken = null;
-    try {
-      materialToken = webpack(runtimeModules.materialDataToken).H;
-    } catch {}
+    const materialToken = resolveRuntimeToken(
+      webpack,
+      runtimeTokenSpecs.materialDataToken,
+    );
     if (!materialToken) return { status: 'pending', reason: 'material-service-token-not-found' };
 
     let materialService = null;
